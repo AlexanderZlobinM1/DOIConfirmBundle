@@ -1,0 +1,24 @@
+{
+    "name": "alexanderzlobinm1/doiconfirmbundle",
+    "description": "Double opt-in (DOI) plugin for Mautic 5, 6 and 7",
+    "type": "mautic-plugin",
+    "license": "GPL-3.0-or-later",
+    "keywords": [
+        "mautic",
+        "plugin",
+        "double-opt-in",
+        "doi"
+    ],
+    "autoload": {
+        "psr-4": {
+            "MauticPlugin\\DOIConfirmBundle\\": ""
+        }
+    },
+    "require": {
+        "php": ">=8.1 <8.5",
+        "mautic/core-lib": "^5.0 || ^6.0 || ^7.0"
+    },
+    "extra": {
+        "install-directory-name": "DOIConfirmBundle"
+    }
+}

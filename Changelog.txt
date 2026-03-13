@@ -1,0 +1,21 @@
+# CHANGELOG
+
+- Compatibility update for Mautic 5/6/7
+- QueueBundle-based DOI processing replaced with Symfony Messenger
+- Added composer constraints for mautic/core-lib ^5 || ^6 || ^7
+- Updated plugin for PHP 8.1 - 8.4 compatibility
+
+- Cleanup and completition of translations
+
+Version 1.4.0   09.05.2022
+- NEW DNC email sending
+- NEW Update lead field values before/after successfull confirmation
+- NEW Webhook for DOI start and finish events
+- NEW Protection against malevolent email threads scanner (ACP: Advanced Thread Protection von Microsoft)
+- NEW Behavioral based protection against problematic malware scanners
+
+Version 1.3.0   22.03.2022
+- Eigener DOI Report für Plugin
+- Lead Felder vor und nach DOI setzen jetzt möglich
+- Do not Contact wird respektiert wenn manuell gesetzt oder von Bounce, aber nicht wenn er vom Benutzer kommt
+- In den Lead Update Felder können die Platzhalter %ip% und %timestamp% genutzt werden (z.B. für DOI Logging in Lead Feldern)
