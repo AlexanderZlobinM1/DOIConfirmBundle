@@ -38,7 +38,7 @@ $defaultIntegrationArguments = array_merge(
 return [
     'name'        => 'DOI Confirm Bundle',
     'description' => 'Adds a robust and flexible way to add a double-opt-in process (DOI) to any form in Mautic.',
-    'version'     => '2.0.0',
+    'version'     => '2.0.1',
     'author'      => 'Alexander Zlobin',
     'services' => [
         'events' => [
@@ -50,19 +50,22 @@ return [
                     'mautic.helper.encryption',
                     'mautic.email.model.email',
                     'mautic.lead.model.lead',
-                    'mautic.tracker.contact'
+                    'mautic.tracker.contact',
+                    'jw.doi.plugin_enabled_resolver',
                 ]
             ],
             'jw.mautic.email.report.doi' => [
                 'class'     => \MauticPlugin\DOIConfirmBundle\EventListener\DoiReportSubscriber::class,
                 'arguments' => [
                     'mautic.lead.reportbundle.fields_builder',
+                    'jw.doi.plugin_enabled_resolver',
                 ],
             ],
             'jw.mautic.webhook.subscriber' => [
                 'class'     => \MauticPlugin\DOIConfirmBundle\EventListener\WebhookSubscriber::class,
                 'arguments' => [
                     'mautic.webhook.model.webhook',
+                    'jw.doi.plugin_enabled_resolver',
                 ],
             ],
         ],
@@ -79,6 +82,7 @@ return [
                     'jw.doi.actionhelper',
                     'jw.doi.nothumanclickhelper',
                     'monolog.logger.mautic',
+                    'jw.doi.plugin_enabled_resolver',
                 ],
                 'tags' => [
                     'messenger.message_handler',
@@ -92,9 +96,13 @@ return [
             ],
         ],
         'helpers' => [
+            'jw.doi.plugin_enabled_resolver' => [
+                'class'     => \MauticPlugin\DOIConfirmBundle\Service\PluginEnabledResolver::class,
+                'arguments' => ['doctrine.orm.entity_manager'],
+            ],
             'jw.doi.actionhelper' => [
                 'class'     => \MauticPlugin\DOIConfirmBundle\Helper\DoiActionHelper::class,
-                'arguments' => ['event_dispatcher', 'mautic.helper.ip_lookup', 'mautic.page.model.page', 'mautic.email.model.email', 'mautic.core.model.auditlog', 'mautic.lead.model.lead', 'request_stack'],
+                'arguments' => ['event_dispatcher', 'mautic.helper.ip_lookup', 'mautic.page.model.page', 'mautic.email.model.email', 'mautic.core.model.auditlog', 'mautic.lead.model.lead', 'request_stack', 'jw.doi.plugin_enabled_resolver'],
             ],
             'jw.doi.nothumanclickhelper' => [
                 'class'     => \MauticPlugin\DOIConfirmBundle\Helper\NotHumanClickHelper::class,

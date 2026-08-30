@@ -6,18 +6,24 @@ use MauticPlugin\DOIConfirmBundle\Helper\DoiActionHelper;
 use MauticPlugin\DOIConfirmBundle\Helper\NotHumanClickHelper;
 use MauticPlugin\DOIConfirmBundle\Message\DoiConfirmationMessage;
 use Psr\Log\LoggerInterface;
+use MauticPlugin\DOIConfirmBundle\Service\PluginEnabledResolver;
 
 class DoiConfirmationMessageHandler
 {
     public function __construct(
         private DoiActionHelper $doiActionHelper,
         private NotHumanClickHelper $notHumanClickHelper,
-        private LoggerInterface $logger
+        private LoggerInterface $logger,
+        private PluginEnabledResolver $pluginEnabledResolver,
     ) {
     }
 
     public function __invoke(DoiConfirmationMessage $message): void
     {
+        if (!$this->pluginEnabledResolver->isEnabled()) {
+            return;
+        }
+
         $config = $message->getConfig();
 
         if ($this->checkIfDoiCancel($config)) {

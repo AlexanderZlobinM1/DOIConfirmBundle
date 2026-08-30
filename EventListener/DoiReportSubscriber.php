@@ -18,6 +18,7 @@ use Mautic\ReportBundle\Event\ReportGeneratorEvent;
 use Mautic\ReportBundle\Event\ReportDataEvent;
 use Mautic\ReportBundle\ReportEvents;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use MauticPlugin\DOIConfirmBundle\Service\PluginEnabledResolver;
 
 class DoiReportSubscriber implements EventSubscriberInterface
 {
@@ -28,12 +29,15 @@ class DoiReportSubscriber implements EventSubscriberInterface
      */
     private $fieldsBuilder;
 
+    private PluginEnabledResolver $pluginEnabledResolver;
+
     /**
      * @param FieldsBuilder $fieldsBuilder
      */
-    public function __construct(FieldsBuilder $fieldsBuilder)
+    public function __construct(FieldsBuilder $fieldsBuilder, PluginEnabledResolver $pluginEnabledResolver)
     {
         $this->fieldsBuilder = $fieldsBuilder;
+        $this->pluginEnabledResolver = $pluginEnabledResolver;
     }
 
     /**
@@ -55,6 +59,10 @@ class DoiReportSubscriber implements EventSubscriberInterface
      */
     public function onReportBuilder(ReportBuilderEvent $event)
     {
+        if (!$this->pluginEnabledResolver->isEnabled()) {
+            return;
+        }
+
         if (!$event->checkContext([self::REPORT_NAME])) {
             return;
         }
@@ -92,6 +100,10 @@ class DoiReportSubscriber implements EventSubscriberInterface
      */
     public function onReportGenerate(ReportGeneratorEvent $event)
     {
+        if (!$this->pluginEnabledResolver->isEnabled()) {
+            return;
+        }
+
         if (!$event->checkContext([self::REPORT_NAME])) {
             return;
         }
@@ -120,6 +132,10 @@ class DoiReportSubscriber implements EventSubscriberInterface
 
     public function onReportDisplay(ReportDataEvent $event)
     {
+        if (!$this->pluginEnabledResolver->isEnabled()) {
+            return;
+        }
+
         if (!$event->checkContext([self::REPORT_NAME])) {
             return;
         }

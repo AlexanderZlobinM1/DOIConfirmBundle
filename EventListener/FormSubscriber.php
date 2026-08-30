@@ -22,6 +22,7 @@ use MauticPlugin\DOIConfirmBundle\Helper\LeadHelper;
 use MauticPlugin\DOIConfirmBundle\Helper\Base64Helper;
 use MauticPlugin\DOIConfirmBundle\DoiEvents;
 use MauticPlugin\DOIConfirmBundle\Event\DoiStarted;
+use MauticPlugin\DOIConfirmBundle\Service\PluginEnabledResolver;
 
 /**
  * Class FormSubscriber.
@@ -41,12 +42,14 @@ class FormSubscriber implements EventSubscriberInterface
     
     protected $contactTracker;
 
+    private PluginEnabledResolver $pluginEnabledResolver;
+
 
     /**
      * FormSubscriber constructor.
      *
      */
-    public function __construct($router, $eventDispatcher, $encryptionHelper, $emailModel, $leadModel, ContactTracker $contactTracker)
+    public function __construct($router, $eventDispatcher, $encryptionHelper, $emailModel, $leadModel, ContactTracker $contactTracker, PluginEnabledResolver $pluginEnabledResolver)
     {
         $this->router = $router;
         $this->eventDispatcher = $eventDispatcher;
@@ -54,6 +57,7 @@ class FormSubscriber implements EventSubscriberInterface
         $this->emailModel = $emailModel;
         $this->leadModel = $leadModel;
         $this->contactTracker = $contactTracker;
+        $this->pluginEnabledResolver = $pluginEnabledResolver;
     }
 
     /**
@@ -76,6 +80,9 @@ class FormSubscriber implements EventSubscriberInterface
      */
     public function onFormBuilder(Events\FormBuilderEvent $event)
     {
+        if (!$this->pluginEnabledResolver->isEnabled()) {
+            return;
+        }
 
         // Send email to lead
         $action = [
@@ -283,6 +290,10 @@ class FormSubscriber implements EventSubscriberInterface
      */
     public function onFormSubmitActionSendEmail(Events\SubmissionEvent $event)
     {
+        if (!$this->pluginEnabledResolver->isEnabled()) {
+            return;
+        }
+
         //only action if this is our form action
         if (!$event->checkContext('jw.email.send.lead')) {
             return;

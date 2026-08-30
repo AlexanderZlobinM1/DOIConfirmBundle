@@ -2,6 +2,10 @@
 
 Adds a robust and flexible way to add a double-opt-in process (DOI) to any form in Mautic.
 
+The integration's Active switch is the master switch. When it is off, the
+bundle does not register form/report/webhook features, send DOI messages,
+accept DOI links, or apply queued contact changes.
+
 ![doi-confirm-plugin-form-action](https://user-images.githubusercontent.com/1366934/138834788-d4a7a685-d15e-4d95-9436-0623e3dbc287.png)
 
 ## What is the plugin for?

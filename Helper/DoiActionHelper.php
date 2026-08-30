@@ -9,6 +9,7 @@ use MauticPlugin\DOIConfirmBundle\Helper\LeadHelper;
 use MauticPlugin\DOIConfirmBundle\DoiEvents;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
+use MauticPlugin\DOIConfirmBundle\Service\PluginEnabledResolver;
 
 
 class DoiActionHelper {
@@ -30,8 +31,10 @@ class DoiActionHelper {
      */
     protected $request;
 
+    private PluginEnabledResolver $pluginEnabledResolver;
 
-    public function __construct($eventDispatcher, $ipLookupHelper, $pageModel, $emailModel, $auditLogModel, $leadModel, RequestStack $requestStack)
+
+    public function __construct($eventDispatcher, $ipLookupHelper, $pageModel, $emailModel, $auditLogModel, $leadModel, RequestStack $requestStack, PluginEnabledResolver $pluginEnabledResolver)
     {
         $this->eventDispatcher = $eventDispatcher;
         $this->ipLookupHelper = $ipLookupHelper;
@@ -40,6 +43,7 @@ class DoiActionHelper {
         $this->auditLogModel = $auditLogModel;
         $this->leadModel = $leadModel;
         $this->request = $requestStack->getCurrentRequest();
+        $this->pluginEnabledResolver = $pluginEnabledResolver;
     }
 
     public function setRequest(?Request $request): void
@@ -68,6 +72,10 @@ class DoiActionHelper {
 
     public function applyDoiActions($config)
     {
+        if (!$this->pluginEnabledResolver->isEnabled()) {
+            return;
+        }
+
         $this->logDoiSuccess($config);
         $this->updateLead($config);
         $this->removeDNC($config['leadEmail'] ?? null);

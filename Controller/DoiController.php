@@ -18,11 +18,13 @@ use MauticPlugin\DOIConfirmBundle\Helper\Base64Helper;
 use MauticPlugin\DOIConfirmBundle\Helper\DoiActionHelper;
 use MauticPlugin\DOIConfirmBundle\Helper\NotHumanClickHelper;
 use MauticPlugin\DOIConfirmBundle\Message\DoiConfirmationMessage;
+use MauticPlugin\DOIConfirmBundle\Service\PluginEnabledResolver;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Messenger\Exception\HandlerFailedException;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Stamp\DelayStamp;
@@ -45,6 +47,7 @@ class DoiController extends FormController
                 'jw.doi.actionhelper' => DoiActionHelper::class,
                 'jw.doi.nothumanclickhelper' => NotHumanClickHelper::class,
                 'monolog.logger.mautic' => LoggerInterface::class,
+                'jw.doi.plugin_enabled_resolver' => PluginEnabledResolver::class,
             ]
         );
     }
@@ -77,6 +80,13 @@ class DoiController extends FormController
     private function getMauticLogger(): LoggerInterface
     {
         return $this->container->get('monolog.logger.mautic');
+    }
+
+    private function requireEnabled(): void
+    {
+        if (!$this->container->get('jw.doi.plugin_enabled_resolver')->isEnabled()) {
+            throw new NotFoundHttpException();
+        }
     }
 
     /**
@@ -147,6 +157,8 @@ class DoiController extends FormController
      */
     public function indexAction($enc = false): Response
     {
+        $this->requireEnabled();
+
         //try to decrypt doi action config
         $config = $this->decryptDoiActions($enc);
         $request = $this->getCurrentRequest();
@@ -181,6 +193,8 @@ class DoiController extends FormController
      */
     public function nothumanAction($hash = false): Response
     {
+        $this->requireEnabled();
+
         $this->getNotHumanClickHelper()->setClick($hash);
 
         return $this->delegateView([

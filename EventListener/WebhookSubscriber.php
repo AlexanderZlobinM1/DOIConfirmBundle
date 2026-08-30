@@ -10,6 +10,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use MauticPlugin\DOIConfirmBundle\DoiEvents;
 use MauticPlugin\DOIConfirmBundle\Event\DoiStarted;
 use MauticPlugin\DOIConfirmBundle\Event\DoiSuccessful;
+use MauticPlugin\DOIConfirmBundle\Service\PluginEnabledResolver;
 
 class WebhookSubscriber implements EventSubscriberInterface
 {
@@ -18,7 +19,7 @@ class WebhookSubscriber implements EventSubscriberInterface
      */
     private $webhookModel;
 
-    public function __construct(WebhookModel $webhookModel)
+    public function __construct(WebhookModel $webhookModel, private PluginEnabledResolver $pluginEnabledResolver)
     {
         $this->webhookModel = $webhookModel;
     }
@@ -40,6 +41,10 @@ class WebhookSubscriber implements EventSubscriberInterface
      */
     public function onWebhookBuild(WebhookBuilderEvent $event)
     {
+        if (!$this->pluginEnabledResolver->isEnabled()) {
+            return;
+        }
+
         $doiStarted = [
             'label'       => 'jw.doi.webhook.event.doi_started',
             'description' => 'jw.doi.webhook.event.doi_started_desc',
@@ -64,6 +69,10 @@ class WebhookSubscriber implements EventSubscriberInterface
      */
     public function onDoiStarted(DoiStarted $event): void
     {
+        if (!$this->pluginEnabledResolver->isEnabled()) {
+            return;
+        }
+
         $this->webhookModel->queueWebhooksByType(
             DoiEvents::DOI_STARTED,
             [
@@ -82,6 +91,10 @@ class WebhookSubscriber implements EventSubscriberInterface
      */
     public function onDoiSuccessful(DoiSuccessful $event): void
     {
+        if (!$this->pluginEnabledResolver->isEnabled()) {
+            return;
+        }
+
         $this->webhookModel->queueWebhooksByType(
             DoiEvents::DOI_SUCCESSFUL,
             [
