@@ -2,7 +2,7 @@
 
 use Mautic\CoreBundle\Helper\AppVersion;
 
-$mauticVersion = (int) str_replace('.', '', explode('-', (new AppVersion())->getVersion())[0]);
+$mauticVersion = (int) (new AppVersion())->getVersion();
 
 $defaultIntegrationArguments = [
     'event_dispatcher',
@@ -10,7 +10,7 @@ $defaultIntegrationArguments = [
     'doctrine.orm.entity_manager',
 ];
 
-if ($mauticVersion >= 600) {
+if ($mauticVersion >= 6) {
     $defaultIntegrationArguments[] = 'request_stack';
 } else {
     $defaultIntegrationArguments[] = 'session';
@@ -23,7 +23,7 @@ $defaultIntegrationArguments = array_merge(
         'router',
         'translator',
         'monolog.logger.mautic',
-        'mautic.helper.encryption',
+        'doiconfirmbundle.helper.encryption',
         'mautic.lead.model.lead',
         'mautic.lead.model.company',
         'mautic.helper.paths',
@@ -31,14 +31,14 @@ $defaultIntegrationArguments = array_merge(
         'mautic.lead.model.field',
         'mautic.plugin.model.integration_entity',
         'mautic.lead.model.dnc',
-        'mautic.lead.field.fields_with_unique_identifier',
+        ...($mauticVersion >= 6 ? ['mautic.lead.field.fields_with_unique_identifier'] : []),
     ]
 );
 
 return [
     'name'        => 'DOI Confirm Bundle',
     'description' => 'Adds a robust and flexible way to add a double-opt-in process (DOI) to any form in Mautic.',
-    'version'     => '2.0.1',
+    'version'     => '2.0.2',
     'author'      => 'Alexander Zlobin',
     'services' => [
         'events' => [
@@ -47,7 +47,7 @@ return [
                 'arguments' => [
                     'router',
                     'event_dispatcher',
-                    'mautic.helper.encryption',
+                    'doiconfirmbundle.helper.encryption',
                     'mautic.email.model.email',
                     'mautic.lead.model.lead',
                     'mautic.tracker.contact',
