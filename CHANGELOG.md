@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.0.9 - 2026-09-11
+
+- Add Russian (`ru`) and Serbian (`sr_RS`) translation catalogs for DOI form
+  action labels, report fields and webhook event labels.
+
 ## 2.0.8 - 2026-09-11
 
 - Attach an in-memory session to DOI synthetic requests when delayed Messenger

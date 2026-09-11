@@ -73,3 +73,9 @@ not have a session, so event listeners reached from
 attaches an in-memory `MockArraySessionStorage` session only when the request
 has no session. This keeps delayed processing sessionless-safe without writing
 browser session state or changing Mautic core.
+
+## Patch note for 2.0.9
+
+Russian (`ru`) and Serbian (`sr_RS`) translation catalogs now cover the same
+DOI form action, report and webhook labels as `en_US` and `de_DE`. No runtime
+logic, storage schema, routes or dependency ranges changed.

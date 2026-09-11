@@ -1,6 +1,6 @@
-# DOIConfirmBundle 2.0.8: руководство оператора
+# DOIConfirmBundle 2.0.9: руководство оператора
 
-Документ описывает canonical plugin source `DOIConfirmBundle` версии `2.0.8`
+Документ описывает canonical plugin source `DOIConfirmBundle` версии `2.0.9`
 для Mautic 5.x, 6.x и 7.x, включая проверенный сценарий Mautic 7.1.3.
 Live-установку, demo-цепочку и приемку на `news.show-master.ru` выполняет
 SalesSnap-Operation. Этот репозиторий содержит только source, документацию и
@@ -171,7 +171,7 @@ instance, не plugin source task.
 
 Быстрые проверки без изменения Mautic core:
 
-1. Убедиться, что plugin version в Mautic registry равен `2.0.8`.
+1. Убедиться, что plugin version в Mautic registry равен `2.0.9`.
 2. Убедиться, что `/s/plugins/config/DoiReport` открывается не 404, а обычной
    страницей настройки integration.
 3. Убедиться, что integration `Doi Report` active.
@@ -183,10 +183,10 @@ instance, не plugin source task.
 8. Проверить Mautic logs на diagnostic:
    `DOI runtime disabled: DoiReport integration settings are missing` или
    `DOI runtime disabled: DoiReport integration is not active`.
-   Если в старом live state были две строки `DoiReport`, версия `2.0.8`
+   Если в старом live state были две строки `DoiReport`, версия `2.0.9`
    должна оставить активную строку authoritative и заархивировать stale-дубли
    как `DoiReport.duplicate.<id>` без ручного SQL.
-   Delayed confirmation в версии `2.0.8` добавляет in-memory session к
+   Delayed confirmation в версии `2.0.9` добавляет in-memory session к
    synthetic request, поэтому `SessionNotFoundException` из
    `RequestStack::getSession()` в Mautic listeners не должен обрывать DOI flow.
    Если встречается warning
@@ -219,7 +219,7 @@ Rollback live instance выполняет SalesSnap-Operation штатным MCC
 Plugin source contract для rollback:
 
 1. Предыдущий опубликованный tag: `v2.0.4`.
-2. Текущий опубликованный tag: `v2.0.8`.
+2. Текущий опубликованный tag: `v2.0.9`.
 3. Bundle directory: `plugins/DOIConfirmBundle`.
 4. Runtime state хранится в Mautic form action config, integration settings,
    contacts, DNC, audit log и webhook queue; plugin rollback не должен purge
@@ -229,9 +229,9 @@ Plugin source contract для rollback:
 6. Если async Messenger был настроен для `DoiConfirmationMessage`, worker и
    queue state проверяются отдельно владельцем instance.
 
-## Проверка v2.0.8 для Mautic 7.1.3
+## Проверка v2.0.9 для Mautic 7.1.3
 
-Проверка source выполнена на tag `v2.0.8`:
+Проверка source выполнена на tag `v2.0.9`:
 
 - integration discovery aligned: `Integration/DoiReportIntegration.php`,
   service id `mautic.integration.doireport`, object name `DoiReport`;
@@ -243,6 +243,8 @@ Plugin source contract для rollback:
   call `RequestStack::getSession()`;
 - synchronous page-hit tracking still calls `PageModel::hitPage()` when
   available;
+- Russian (`ru`) and Serbian (`sr_RS`) catalogs contain the same 18 message
+  keys as `en_US`;
 - expected Plugins UI config route: `/s/plugins/config/DoiReport`;
 - public routes остались `/doi/{enc}` и `/nothuman/{hash}`;
 - tokens остались `{doi_url}` и `{doi_nothuman}`;
