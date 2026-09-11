@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.0.11 - 2026-09-11
+
+- Apply the existing `remove_tags_doi_success_tags` selections as pending DOI
+  tags immediately after a successful form submit starts the DOI challenge.
+- Apply the existing `remove_campaign_doi_success_lists` selections as pending
+  DOI segments immediately after a successful form submit starts the DOI
+  challenge.
+- Keep DOI confirmation idempotent: successful DOI still removes the pending
+  tags/segments and adds the configured confirmed tags/segments.
+- Add DB-free regression coverage for the submit-to-confirm state transition.
+
 ## 2.0.10 - 2026-09-11
 
 - Add a `ru_RU` Russian translation catalog for Mautic installations that use

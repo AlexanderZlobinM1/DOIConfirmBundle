@@ -203,20 +203,12 @@ class DoiActionHelper {
             return;
         }
 
-        // Change Tags (if any)
-        if(!empty($addTags)|| !empty($removeTags)){
-            $this->leadModel->modifyTags($lead, $addTags, $removeTags);
-        }
-
-        // Add to Lists (if any)
-        if (!empty($addTo)) {
-            $this->leadModel->addToLists($lead, $addTo);
-        }
-
-        // Remove from Lists (if any)
-        if (!empty($removeFrom)) {
-            $this->leadModel->removeFromLists($lead, $removeFrom);
-        }       
+        DoiStateTransitionHelper::applyConfirmedState($this->leadModel, $lead, [
+            'add_tags'        => $addTags,
+            'remove_tags'     => $removeTags,
+            'addToLists'      => $addTo,
+            'removeFromLists' => $removeFrom,
+        ]);
 
         //Update lead value (if any)
         if( !empty($leadFieldUpdate) )

@@ -20,6 +20,7 @@ use Mautic\LeadBundle\Tracker\ContactTracker;
 use MauticPlugin\DOIConfirmBundle\Entity\DoNotContact as DNC;
 use MauticPlugin\DOIConfirmBundle\Helper\LeadHelper;
 use MauticPlugin\DOIConfirmBundle\Helper\Base64Helper;
+use MauticPlugin\DOIConfirmBundle\Helper\DoiStateTransitionHelper;
 use MauticPlugin\DOIConfirmBundle\DoiEvents;
 use MauticPlugin\DOIConfirmBundle\Event\DoiStarted;
 use MauticPlugin\DOIConfirmBundle\Service\PluginEnabledResolver;
@@ -103,6 +104,11 @@ class FormSubscriber implements EventSubscriberInterface
         }
 
         LeadHelper::leadFieldUpdate($config['lead_field_update_before'], $this->leadModel, $lead);
+    }
+
+    private function applyPendingState($config, $lead): void
+    {
+        DoiStateTransitionHelper::applyPendingState($this->leadModel, $lead, $config);
     }
     
     /**
@@ -327,6 +333,9 @@ class FormSubscriber implements EventSubscriberInterface
 
         //Update lead field (if configured)
         $this->leadFieldUpdate($config, $lead);
+
+        // Apply pending DOI state before the confirmation email is sent.
+        $this->applyPendingState($config, $lead);
 
         //Send double optin email             
         $this->sendDoiEmail($lead, $config, $data, $tokens, $submissionId);

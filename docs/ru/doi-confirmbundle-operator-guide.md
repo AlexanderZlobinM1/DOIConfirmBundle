@@ -1,6 +1,6 @@
-# DOIConfirmBundle 2.0.10: руководство оператора
+# DOIConfirmBundle 2.0.11: руководство оператора
 
-Документ описывает canonical plugin source `DOIConfirmBundle` версии `2.0.10`
+Документ описывает canonical plugin source `DOIConfirmBundle` версии `2.0.11`
 для Mautic 5.x, 6.x и 7.x, включая проверенный сценарий Mautic 7.1.3.
 Live-установку, demo-цепочку и приемку на `news.show-master.ru` выполняет
 SalesSnap-Operation. Этот репозиторий содержит только source, документацию и
@@ -54,12 +54,15 @@ form action видно в builder всегда, чтобы оператор мо
    `Double-Opt-In (DOI) via Email Confirmation`.
 4. Заполните обязательные поля:
    `Email to send` и `Redirect URL after success`.
-5. При необходимости заполните success actions:
+5. При необходимости заполните DOI state actions:
    `Tags to set after successfull DOI`,
    `Tags to remove after successfull DOI`,
    `Segments to add to contact after successfull DOI`,
    `Segments to remove from contact after successfull DOI`,
    `Update contact fields after successfull DOI`.
+   Поля `Tags/Segments to remove after successfull DOI` также задают pending
+   состояние: эти теги/сегменты добавляются сразу после успешной отправки
+   формы и удаляются после DOI-click.
 6. При необходимости заполните pre-send action:
    `Update contact fields before successfull DOI`.
 7. Если email может быть сохранен не в основном поле контакта, заполните
@@ -171,7 +174,7 @@ instance, не plugin source task.
 
 Быстрые проверки без изменения Mautic core:
 
-1. Убедиться, что plugin version в Mautic registry равен `2.0.10`.
+1. Убедиться, что plugin version в Mautic registry равен `2.0.11`.
 2. Убедиться, что `/s/plugins/config/DoiReport` открывается не 404, а обычной
    страницей настройки integration.
 3. Убедиться, что integration `Doi Report` active.
@@ -183,10 +186,10 @@ instance, не plugin source task.
 8. Проверить Mautic logs на diagnostic:
    `DOI runtime disabled: DoiReport integration settings are missing` или
    `DOI runtime disabled: DoiReport integration is not active`.
-   Если в старом live state были две строки `DoiReport`, версия `2.0.10`
+   Если в старом live state были две строки `DoiReport`, версия `2.0.11`
    должна оставить активную строку authoritative и заархивировать stale-дубли
    как `DoiReport.duplicate.<id>` без ручного SQL.
-   Delayed confirmation в версии `2.0.10` добавляет in-memory session к
+   Delayed confirmation в версии `2.0.11` добавляет in-memory session к
    synthetic request, поэтому `SessionNotFoundException` из
    `RequestStack::getSession()` в Mautic listeners не должен обрывать DOI flow.
    Если встречается warning
@@ -218,8 +221,8 @@ cache rebuild — отдельная operational operation.
 Rollback live instance выполняет SalesSnap-Operation штатным MCC/MCD путем.
 Plugin source contract для rollback:
 
-1. Предыдущий опубликованный tag: `v2.0.4`.
-2. Текущий опубликованный tag: `v2.0.10`.
+1. Предыдущий опубликованный tag: `v2.0.10`.
+2. Текущий опубликованный tag: `v2.0.11`.
 3. Bundle directory: `plugins/DOIConfirmBundle`.
 4. Runtime state хранится в Mautic form action config, integration settings,
    contacts, DNC, audit log и webhook queue; plugin rollback не должен purge
@@ -229,9 +232,9 @@ Plugin source contract для rollback:
 6. Если async Messenger был настроен для `DoiConfirmationMessage`, worker и
    queue state проверяются отдельно владельцем instance.
 
-## Проверка v2.0.10 для Mautic 7.1.3
+## Проверка v2.0.11 для Mautic 7.1.3
 
-Проверка source выполнена на tag `v2.0.10`:
+Проверка source выполнена на tag `v2.0.11`:
 
 - integration discovery aligned: `Integration/DoiReportIntegration.php`,
   service id `mautic.integration.doireport`, object name `DoiReport`;
@@ -245,6 +248,9 @@ Plugin source contract для rollback:
   available;
 - Russian (`ru`, `ru_RU`) and Serbian (`sr_RS`) catalogs contain the same 18
   message keys as `en_US` without known English fallback UI labels;
+- initial submit applies pending DOI tags/segments from the existing
+  remove-after-success settings, while confirmation removes pending state and
+  applies confirmed tags/segments idempotently;
 - expected Plugins UI config route: `/s/plugins/config/DoiReport`;
 - public routes остались `/doi/{enc}` и `/nothuman/{hash}`;
 - tokens остались `{doi_url}` и `{doi_nothuman}`;

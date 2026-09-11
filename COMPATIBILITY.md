@@ -87,3 +87,13 @@ directory. DOI now ships both `ru` and `ru_RU` Russian catalogs, plus `sr_RS`,
 so instances configured with either Russian locale code avoid English fallback
 labels. `Tests/translation-catalogs.php` audits all shipped locales for key
 parity, placeholder parity and known English fallback strings.
+
+## Patch note for 2.0.11
+
+The existing "remove after successful DOI" tag and segment settings now also
+define the pending DOI state. On initial successful form submit, DOI assigns
+those selected tags and segments before sending the confirmation email. On
+successful confirmation, the existing success flow remains unchanged: pending
+tags and segments are removed, confirmed tags and segments are added, field
+updates run, DNC is removed and events/audit continue. No form action storage
+keys, routes, schema, token names or translation keys changed.
