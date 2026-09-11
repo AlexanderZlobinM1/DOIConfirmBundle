@@ -43,6 +43,7 @@ class PluginCompatibilityKernel extends AppKernel
                 // Public only in this test container. No bypass of core final classes.
                 $container->getDefinition('form.registry')->setPublic(true);
                 $container->getDefinition('form.factory')->setPublic(true);
+                $container->getDefinition('twig')->setPublic(true);
                 $prefix = 'MauticPlugin\\'.getenv('COMPAT_BUNDLE').'\\';
                 $services = $forms = [];
                 foreach ($container->getDefinitions() as $id => $definition) {
@@ -105,6 +106,58 @@ try {
         $container->get('form.registry')->getType($formType);
         echo 'FORM '.$formType.PHP_EOL;
     }
+    $formBuilderEvent = new Mautic\FormBundle\Event\FormBuilderEvent($container->get('translator'));
+    $container->get('jw.mautic.email.formbundle.subscriber')->onFormBuilder($formBuilderEvent);
+    $submitActions = $formBuilderEvent->getSubmitActions();
+    $doiAction = $submitActions['jw.email.send.lead'] ?? null;
+    if (!is_array($doiAction)) {
+        throw new RuntimeException('DOI submit action jw.email.send.lead was not registered.');
+    }
+    $expectedAction = [
+        'group'     => 'mautic.email.actions',
+        'formType'  => MauticPlugin\DOIConfirmBundle\Form\Type\EmailSendType::class,
+        'formTheme' => '@DOIConfirm/FormTheme/EmailSendList/emailsend_list_row.html.twig',
+        'eventName' => Mautic\FormBundle\FormEvents::ON_EXECUTE_SUBMIT_ACTION,
+    ];
+    foreach ($expectedAction as $key => $value) {
+        if (($doiAction[$key] ?? null) !== $value) {
+            throw new RuntimeException(sprintf('DOI submit action %s mismatch.', $key));
+        }
+    }
+    if (!$container->get('twig')->getLoader()->exists($doiAction['formTheme'])) {
+        throw new RuntimeException(sprintf('DOI submit action form theme %s was not found.', $doiAction['formTheme']));
+    }
+    $propertiesBuilder = new Symfony\Component\Form\FormBuilder(
+        'doi_action_properties',
+        null,
+        $container->get('event_dispatcher'),
+        $container->get('form.factory')
+    );
+    $container->get('jw.mautic.form.type.jw_emailsend_list')->buildForm(
+        $propertiesBuilder,
+        array_merge(['with_email_types' => false], $doiAction['formTypeOptions'] ?? [])
+    );
+    $expectedFields = [
+        'email',
+        'newEmailButton',
+        'editEmailButton',
+        'previewEmailButton',
+        'add_campaign_doi_success_tags',
+        'remove_tags_doi_success_tags',
+        'add_campaign_doi_success_lists',
+        'remove_campaign_doi_success_lists',
+        'post_url',
+        'lead_field_update',
+        'lead_field_update_before',
+        'alternative_email_field',
+    ];
+    foreach ($expectedFields as $field) {
+        if (!$propertiesBuilder->has($field)) {
+            throw new RuntimeException(sprintf('DOI submit action properties field %s was not registered.', $field));
+        }
+    }
+    echo 'ACTION jw.email.send.lead '.($doiAction['label'] ?? '').PHP_EOL;
+    echo 'ACTION_FIELDS '.implode(',', $expectedFields).PHP_EOL;
     echo 'PASS '.$bundle.' Mautic '.$kernel->getVersion().' PHP '.PHP_VERSION.PHP_EOL;
 } catch (Throwable $exception) {
     fwrite(STDERR, get_class($exception).': '.$exception->getMessage().PHP_EOL);

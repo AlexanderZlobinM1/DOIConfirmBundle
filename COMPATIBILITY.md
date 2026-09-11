@@ -22,3 +22,12 @@ Fresh-kernel service instantiation and form construction/resolution passed on `7
 The DOI success-action patch preserves the original click request in the local
 request stack while delayed processing runs. It does not change the declared
 Mautic/PHP dependency range, routes, schema, form action storage or token names.
+
+## Patch note for 2.0.4
+
+The DOI form action is always contributed to the Mautic form action registry so
+operators can configure it through the UI even before the integration is active.
+Runtime execution, public endpoints and queued mutations remain guarded by the
+integration master switch. The custom form theme now uses the Mautic 7 Twig
+namespace path and renders the remaining DOI configuration fields with
+`form_rest()`.

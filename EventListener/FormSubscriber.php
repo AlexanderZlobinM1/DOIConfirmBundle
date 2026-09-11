@@ -80,10 +80,6 @@ class FormSubscriber implements EventSubscriberInterface
      */
     public function onFormBuilder(Events\FormBuilderEvent $event)
     {
-        if (!$this->pluginEnabledResolver->isEnabled()) {
-            return;
-        }
-
         // Send email to lead
         $action = [
             'group'           => 'mautic.email.actions',
@@ -91,8 +87,8 @@ class FormSubscriber implements EventSubscriberInterface
             'description'     => 'jw.mautic.email.form.action.sendemail.lead.descr',
             'formType'        => \MauticPlugin\DOIConfirmBundle\Form\Type\EmailSendType::class,
             'formTypeOptions' => ['update_select' => 'formaction_properties_email'],
-            'formTheme'       => 'DOIConfirmBundle:FormTheme\EmailSendList',
-            'eventName'         => FormEvents::ON_EXECUTE_SUBMIT_ACTION,
+            'formTheme'       => '@DOIConfirm/FormTheme/EmailSendList/emailsend_list_row.html.twig',
+            'eventName'       => FormEvents::ON_EXECUTE_SUBMIT_ACTION,
             'allowCampaignForm' => true,            
         ];
 

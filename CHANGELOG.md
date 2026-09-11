@@ -1,5 +1,17 @@
 # Changelog
 
+## 2.0.4 - 2026-09-11
+
+- Always register the dedicated DOI form action in the Mautic form action
+  builder so operators can configure DOI settings before or after enabling the
+  integration master switch.
+- Keep runtime execution, public endpoints and queued mutations guarded by the
+  integration master switch.
+- Use the Mautic 7-compatible Twig form theme path for the DOI form action and
+  render all DOI-specific configuration fields.
+- Extend runtime compatibility coverage to assert the form action registry and
+  DOI action configuration fields.
+
 ## 2.0.3 - 2026-09-11
 
 - Preserve the original public DOI request context in Mautic's request stack

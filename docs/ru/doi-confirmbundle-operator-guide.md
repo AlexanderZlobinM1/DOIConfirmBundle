@@ -1,6 +1,6 @@
-# DOIConfirmBundle 2.0.3: руководство оператора
+# DOIConfirmBundle 2.0.4: руководство оператора
 
-Документ описывает canonical plugin source `DOIConfirmBundle` версии `2.0.3`
+Документ описывает canonical plugin source `DOIConfirmBundle` версии `2.0.4`
 для Mautic 5.x, 6.x и 7.x, включая проверенный сценарий Mautic 7.1.3.
 Live-установку, demo-цепочку и приемку на `news.show-master.ru` выполняет
 SalesSnap-Operation. Этот репозиторий содержит только source, документацию и
@@ -16,9 +16,11 @@ plugin-owned compatibility evidence.
 удаляет теги, добавляет или удаляет сегменты, обновляет поля контакта, снимает
 email DNC, пишет audit log, регистрирует page hit и отправляет webhook event.
 
-Главный runtime-переключатель — `Active` у integration `Doi Report`. Когда он
-выключен, плагин не регистрирует form action, report/webhook события, не
-принимает public DOI endpoints и не применяет queued mutations.
+Главный runtime-переключатель — `Active` у integration `Doi Report`. Отдельное
+form action видно в builder всегда, чтобы оператор мог настроить DOI через UI.
+Когда integration выключена, плагин не выполняет form submissions, не
+показывает report/webhook события, не принимает public DOI endpoints и не
+применяет queued mutations.
 
 ## Lifecycle
 
@@ -131,7 +133,7 @@ bot-trap marker. Если marker существует, он удаляется, 
 8. Page hit через `PageModel::hitPage()`.
 9. Webhook event `doi.successful`.
 
-В версии `2.0.3` исходный confirmation-click request временно возвращается в
+Начиная с версии `2.0.3`, исходный confirmation-click request временно возвращается в
 Mautic `RequestStack` на время success actions. Это важно для Mautic 7.1.3:
 `IpLookupHelper` и `PageModel` читают текущий request stack для IP, privacy
 headers, bot detection и trackability checks. Без этого delayed CLI processing
@@ -168,7 +170,7 @@ instance, не plugin source task.
 
 Быстрые проверки без изменения Mautic core:
 
-1. Убедиться, что plugin version в Mautic registry равен `2.0.3`.
+1. Убедиться, что plugin version в Mautic registry равен `2.0.4`.
 2. Убедиться, что integration `Doi Report` active.
 3. Проверить, что form action сохранен с ключом `jw.email.send.lead`.
 4. Проверить, что выбранный email published и содержит `{doi_url}`.
@@ -202,7 +204,7 @@ Rollback live instance выполняет SalesSnap-Operation штатным MCC
 Plugin source contract для rollback:
 
 1. Предыдущий опубликованный tag: `v2.0.2`.
-2. Текущий опубликованный tag: `v2.0.3`.
+2. Текущий опубликованный tag: `v2.0.4`.
 3. Bundle directory: `plugins/DOIConfirmBundle`.
 4. Runtime state хранится в Mautic form action config, integration settings,
    contacts, DNC, audit log и webhook queue; plugin rollback не должен purge
@@ -212,9 +214,9 @@ Plugin source contract для rollback:
 6. Если async Messenger был настроен для `DoiConfirmationMessage`, worker и
    queue state проверяются отдельно владельцем instance.
 
-## Проверка v2.0.3 для Mautic 7.1.3
+## Проверка v2.0.4 для Mautic 7.1.3
 
-Проверка source выполнена на tag `v2.0.3`:
+Проверка source выполнена на tag `v2.0.4`:
 
 - public routes остались `/doi/{enc}` и `/nothuman/{hash}`;
 - tokens остались `{doi_url}` и `{doi_nothuman}`;
