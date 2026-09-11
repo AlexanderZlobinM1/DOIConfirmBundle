@@ -10,6 +10,8 @@ use MauticPlugin\DOIConfirmBundle\DoiEvents;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpFoundation\Session\Session;
+use Symfony\Component\HttpFoundation\Session\Storage\MockArraySessionStorage;
 use MauticPlugin\DOIConfirmBundle\Service\PluginEnabledResolver;
 
 
@@ -83,9 +85,13 @@ class DoiActionHelper {
         }
 
         $pushedRequest = false;
-        if ($this->request instanceof Request && $this->requestStack->getCurrentRequest() !== $this->request) {
-            $this->requestStack->push($this->request);
-            $pushedRequest = true;
+        if ($this->request instanceof Request) {
+            $this->ensureRequestHasSession($this->request);
+
+            if ($this->requestStack->getCurrentRequest() !== $this->request) {
+                $this->requestStack->push($this->request);
+                $pushedRequest = true;
+            }
         }
 
         try {
@@ -141,6 +147,15 @@ class DoiActionHelper {
             }
         }
 
+    }
+
+    private function ensureRequestHasSession(Request $request): void
+    {
+        if ($request->hasSession()) {
+            return;
+        }
+
+        $request->setSession(new Session(new MockArraySessionStorage()));
     }
 
     public function identifyLead($leadId) 

@@ -62,3 +62,14 @@ warning and continues the confirmation flow: audit `confirm_doi`, tags,
 segments, field updates, DNC removal, webhook dispatch and the controller
 redirect are not aborted by the tracking failure. Synchronous request tracking
 still calls `PageModel::hitPage()` when available.
+
+## Patch note for 2.0.8
+
+Delayed DOI confirmations rebuild the public click as a synthetic Symfony
+`Request` so Mautic helpers can read client context. That synthetic request did
+not have a session, so event listeners reached from
+`DoiActionHelper::identifyLead()` or DOI success dispatch could throw
+`SessionNotFoundException` through `RequestStack::getSession()`. DOI now
+attaches an in-memory `MockArraySessionStorage` session only when the request
+has no session. This keeps delayed processing sessionless-safe without writing
+browser session state or changing Mautic core.

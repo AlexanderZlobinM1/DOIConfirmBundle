@@ -161,8 +161,16 @@ final class DoiTestEventDispatcher
 {
     public array $events = [];
 
+    public function __construct(private ?Symfony\Component\HttpFoundation\RequestStack $requestStack = null)
+    {
+    }
+
     public function dispatch(object $event, ?string $eventName = null): object
     {
+        if ($this->requestStack instanceof Symfony\Component\HttpFoundation\RequestStack) {
+            $this->requestStack->getSession()->set('doi.last_event', $eventName);
+        }
+
         $this->events[] = [$eventName, $event];
 
         return $event;
@@ -356,12 +364,12 @@ if (0 !== $idempotentEntityManager->flushes) {
     throw new RuntimeException('Normalized DoiReport integration should not flush on a second pass.');
 }
 
-$delayedDispatcher = new DoiTestEventDispatcher();
+$delayedRequestStack = new Symfony\Component\HttpFoundation\RequestStack();
+$delayedDispatcher = new DoiTestEventDispatcher($delayedRequestStack);
 $delayedPageModel = new DoiTestPageModel(true);
 $delayedEmailModel = new DoiTestEmailModel();
 $delayedAuditLogModel = new DoiTestAuditLogModel();
 $delayedLeadModel = new DoiTestLeadModel();
-$delayedRequestStack = new Symfony\Component\HttpFoundation\RequestStack();
 $delayedLogger = new DoiTestLogger();
 $delayedHelper = new MauticPlugin\DOIConfirmBundle\Helper\DoiActionHelper(
     $delayedDispatcher,
@@ -401,7 +409,7 @@ if ('warning' !== ($delayedLogger->records[0][0] ?? null) || !str_contains($dela
 $syncRequest = Symfony\Component\HttpFoundation\Request::create('https://example.test/doi/sync', 'GET');
 $syncRequestStack = new Symfony\Component\HttpFoundation\RequestStack();
 $syncRequestStack->push($syncRequest);
-$syncDispatcher = new DoiTestEventDispatcher();
+$syncDispatcher = new DoiTestEventDispatcher($syncRequestStack);
 $syncPageModel = new DoiTestPageModel(false);
 $syncEmailModel = new DoiTestEmailModel();
 $syncAuditLogModel = new DoiTestAuditLogModel();
@@ -426,11 +434,14 @@ if (1 !== count($syncPageModel->hits)) {
 if ('https://example.test/doi/success' !== $syncRequest->query->get('page_url') || 'https://example.test/doi/success' !== $syncRequest->request->get('page_url')) {
     throw new RuntimeException('Synchronous DOI page-hit tracking did not receive the success page URL.');
 }
+if (!$syncRequest->hasSession() || MauticPlugin\DOIConfirmBundle\DoiEvents::DOI_SUCCESSFUL !== $syncRequestStack->getSession()->get('doi.last_event')) {
+    throw new RuntimeException('Synchronous DOI confirmation did not provide session access to event listeners.');
+}
 if ([] !== $syncLogger->records) {
     throw new RuntimeException('Synchronous DOI page-hit tracking logged an unexpected warning.');
 }
 
 echo 'DISCOVERY DoiReport mautic.integration.doireport'.PHP_EOL;
 echo 'RESOLVER missing=false disabled=false enabled=true duplicate-active=true normalization=idempotent'.PHP_EOL;
-echo 'DOI_ACTIONS delayed-tracking-failure=nonfatal sync-tracking=ok'.PHP_EOL;
+echo 'DOI_ACTIONS delayed-sessionless=ok delayed-tracking-failure=nonfatal sync-session=ok sync-tracking=ok'.PHP_EOL;
 echo 'PASS DOI integration discovery'.PHP_EOL;

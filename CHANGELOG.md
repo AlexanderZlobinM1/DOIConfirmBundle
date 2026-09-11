@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.0.8 - 2026-09-11
+
+- Attach an in-memory session to DOI synthetic requests when delayed Messenger
+  confirmation runs without an HTTP session, so Mautic listeners that read
+  `RequestStack::getSession()` do not abort the DOI flow.
+- Preserve the existing synchronous request path while making no-session delayed
+  confirmation safe for audit, contact mutations, DNC removal, webhook dispatch
+  and redirect completion.
+- Extend regression coverage for no-session delayed listeners and synchronous
+  session access.
+
 ## 2.0.7 - 2026-09-11
 
 - Make DOI confirmation page-hit tracking best-effort so unavailable Mautic
