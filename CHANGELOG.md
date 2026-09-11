@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.0.6 - 2026-09-11
+
+- Make the `DoiReport` integration resolver deterministic when historical
+  duplicate settings rows exist, preferring an active row over a disabled row.
+- Normalize duplicate exact-name `DoiReport` settings rows in place by keeping
+  the selected row authoritative and archiving stale duplicates without
+  deleting their settings.
+- Add regression coverage for duplicate disabled/enabled rows and idempotent
+  duplicate normalization.
+
 ## 2.0.5 - 2026-09-11
 
 - Register the `DoiReport` integration under Mautic's legacy discovery

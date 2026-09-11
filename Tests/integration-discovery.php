@@ -41,22 +41,52 @@ if ('DoiReport' !== $integration->getName()) {
 
 final class DoiTestRepository
 {
-    public function __construct(private ?Mautic\PluginBundle\Entity\Integration $integration)
+    /**
+     * @param Mautic\PluginBundle\Entity\Integration[] $integrations
+     */
+    public function __construct(private array $integrations)
     {
     }
 
     public function findOneBy(array $criteria): ?Mautic\PluginBundle\Entity\Integration
     {
+        return $this->findBy($criteria)[0] ?? null;
+    }
+
+    /**
+     * @return Mautic\PluginBundle\Entity\Integration[]
+     */
+    public function findBy(array $criteria, ?array $orderBy = null): array
+    {
         if (($criteria['name'] ?? null) !== 'DoiReport') {
             throw new RuntimeException('Resolver queried an unexpected integration name.');
         }
 
-        return $this->integration;
+        $integrations = array_values(array_filter(
+            $this->integrations,
+            static fn (Mautic\PluginBundle\Entity\Integration $integration): bool => $integration->getName() === 'DoiReport'
+        ));
+
+        usort(
+            $integrations,
+            static function (Mautic\PluginBundle\Entity\Integration $left, Mautic\PluginBundle\Entity\Integration $right): int {
+                $published = ((int) $right->getIsPublished()) <=> ((int) $left->getIsPublished());
+                if (0 !== $published) {
+                    return $published;
+                }
+
+                return ((int) $right->getId()) <=> ((int) $left->getId());
+            }
+        );
+
+        return $integrations;
     }
 }
 
 final class DoiTestEntityManager implements Doctrine\ORM\EntityManagerInterface
 {
+    public int $flushes = 0;
+
     public function __construct(private DoiTestRepository $repository)
     {
     }
@@ -96,10 +126,25 @@ final class DoiTestEntityManager implements Doctrine\ORM\EntityManagerInterface
     public function clear($objectName = null) { throw new BadMethodCallException(); }
     public function detach($object) { throw new BadMethodCallException(); }
     public function refresh($object) { throw new BadMethodCallException(); }
-    public function flush($entity = null) { throw new BadMethodCallException(); }
+    public function flush($entity = null) { ++$this->flushes; }
     public function getMetadataFactory() { throw new BadMethodCallException(); }
     public function initializeObject($obj) { throw new BadMethodCallException(); }
     public function contains($object) { throw new BadMethodCallException(); }
+}
+
+function doi_test_integration(int $id, bool $published, array $apiKeys = [], array $featureSettings = [], array $supportedFeatures = []): Mautic\PluginBundle\Entity\Integration
+{
+    $integration = (new Mautic\PluginBundle\Entity\Integration())
+        ->setName('DoiReport')
+        ->setIsPublished($published)
+        ->setApiKeys($apiKeys)
+        ->setFeatureSettings($featureSettings)
+        ->setSupportedFeatures($supportedFeatures);
+
+    $idProperty = new ReflectionProperty(Mautic\PluginBundle\Entity\Integration::class, 'id');
+    $idProperty->setValue($integration, $id);
+
+    return $integration;
 }
 
 final class DoiTestLogger extends Psr\Log\AbstractLogger
@@ -113,15 +158,15 @@ final class DoiTestLogger extends Psr\Log\AbstractLogger
 }
 
 $cases = [
-    'missing' => [null, false],
-    'disabled' => [(new Mautic\PluginBundle\Entity\Integration())->setName('DoiReport')->setIsPublished(false), false],
-    'enabled' => [(new Mautic\PluginBundle\Entity\Integration())->setName('DoiReport')->setIsPublished(true), true],
+    'missing' => [[], false],
+    'disabled' => [[doi_test_integration(36, false)], false],
+    'enabled' => [[doi_test_integration(37, true)], true],
 ];
 
-foreach ($cases as $name => [$entity, $expected]) {
+foreach ($cases as $name => [$integrations, $expected]) {
     $logger = new DoiTestLogger();
     $resolver = new MauticPlugin\DOIConfirmBundle\Service\PluginEnabledResolver(
-        new DoiTestEntityManager(new DoiTestRepository($entity)),
+        new DoiTestEntityManager(new DoiTestRepository($integrations)),
         $logger
     );
     if ($resolver->isEnabled() !== $expected) {
@@ -132,6 +177,44 @@ foreach ($cases as $name => [$entity, $expected]) {
     }
 }
 
+$staleDisabled = doi_test_integration(36, false);
+$active = doi_test_integration(37, true);
+$duplicateEntityManager = new DoiTestEntityManager(new DoiTestRepository([$staleDisabled, $active]));
+$duplicateLogger = new DoiTestLogger();
+$duplicateResolver = new MauticPlugin\DOIConfirmBundle\Service\PluginEnabledResolver($duplicateEntityManager, $duplicateLogger);
+if (true !== $duplicateResolver->isEnabled()) {
+    throw new RuntimeException('Resolver did not prefer the active duplicate DoiReport integration.');
+}
+if ('DoiReport' !== $active->getName() || !$active->getIsPublished()) {
+    throw new RuntimeException('Resolver did not keep the active DoiReport integration authoritative.');
+}
+if ('DoiReport.duplicate.36' !== $staleDisabled->getName() || $staleDisabled->getIsPublished()) {
+    throw new RuntimeException('Resolver did not archive the stale disabled DoiReport duplicate.');
+}
+if (1 !== $duplicateEntityManager->flushes) {
+    throw new RuntimeException('Duplicate DoiReport normalization did not flush exactly once.');
+}
+
+$settingsCarrier = doi_test_integration(36, false, ['legacy' => 'api'], ['source' => 'legacy'], ['feature']);
+$emptyActive = doi_test_integration(37, true);
+$settingsEntityManager = new DoiTestEntityManager(new DoiTestRepository([$settingsCarrier, $emptyActive]));
+$settingsResolver = new MauticPlugin\DOIConfirmBundle\Service\PluginEnabledResolver($settingsEntityManager, new DoiTestLogger());
+if (true !== $settingsResolver->isEnabled()) {
+    throw new RuntimeException('Resolver did not keep runtime enabled while normalizing duplicate settings.');
+}
+if (['legacy' => 'api'] !== $emptyActive->getApiKeys() || ['source' => 'legacy'] !== $emptyActive->getFeatureSettings() || ['feature'] !== $emptyActive->getSupportedFeatures()) {
+    throw new RuntimeException('Duplicate DoiReport normalization did not preserve settings on the authoritative row.');
+}
+
+$idempotentEntityManager = new DoiTestEntityManager(new DoiTestRepository([$emptyActive, $settingsCarrier]));
+$idempotentResolver = new MauticPlugin\DOIConfirmBundle\Service\PluginEnabledResolver($idempotentEntityManager, new DoiTestLogger());
+if (true !== $idempotentResolver->isEnabled()) {
+    throw new RuntimeException('Normalized DoiReport integration did not remain enabled.');
+}
+if (0 !== $idempotentEntityManager->flushes) {
+    throw new RuntimeException('Normalized DoiReport integration should not flush on a second pass.');
+}
+
 echo 'DISCOVERY DoiReport mautic.integration.doireport'.PHP_EOL;
-echo 'RESOLVER missing=false disabled=false enabled=true'.PHP_EOL;
+echo 'RESOLVER missing=false disabled=false enabled=true duplicate-active=true normalization=idempotent'.PHP_EOL;
 echo 'PASS DOI integration discovery'.PHP_EOL;

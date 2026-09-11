@@ -1,6 +1,6 @@
-# DOIConfirmBundle 2.0.5: руководство оператора
+# DOIConfirmBundle 2.0.6: руководство оператора
 
-Документ описывает canonical plugin source `DOIConfirmBundle` версии `2.0.5`
+Документ описывает canonical plugin source `DOIConfirmBundle` версии `2.0.6`
 для Mautic 5.x, 6.x и 7.x, включая проверенный сценарий Mautic 7.1.3.
 Live-установку, demo-цепочку и приемку на `news.show-master.ru` выполняет
 SalesSnap-Operation. Этот репозиторий содержит только source, документацию и
@@ -171,7 +171,7 @@ instance, не plugin source task.
 
 Быстрые проверки без изменения Mautic core:
 
-1. Убедиться, что plugin version в Mautic registry равен `2.0.5`.
+1. Убедиться, что plugin version в Mautic registry равен `2.0.6`.
 2. Убедиться, что `/s/plugins/config/DoiReport` открывается не 404, а обычной
    страницей настройки integration.
 3. Убедиться, что integration `Doi Report` active.
@@ -183,6 +183,9 @@ instance, не plugin source task.
 8. Проверить Mautic logs на diagnostic:
    `DOI runtime disabled: DoiReport integration settings are missing` или
    `DOI runtime disabled: DoiReport integration is not active`.
+   Если в старом live state были две строки `DoiReport`, версия `2.0.6`
+   должна оставить активную строку authoritative и заархивировать stale-дубли
+   как `DoiReport.duplicate.<id>` без ручного SQL.
 9. Проверить `audit_log` для `bundle=lead`, `object=doi`,
    `action=confirm_doi`.
 10. Проверить webhook queue/events для `doi.started` и `doi.successful`.
@@ -209,7 +212,7 @@ Rollback live instance выполняет SalesSnap-Operation штатным MCC
 Plugin source contract для rollback:
 
 1. Предыдущий опубликованный tag: `v2.0.4`.
-2. Текущий опубликованный tag: `v2.0.5`.
+2. Текущий опубликованный tag: `v2.0.6`.
 3. Bundle directory: `plugins/DOIConfirmBundle`.
 4. Runtime state хранится в Mautic form action config, integration settings,
    contacts, DNC, audit log и webhook queue; plugin rollback не должен purge
@@ -219,12 +222,14 @@ Plugin source contract для rollback:
 6. Если async Messenger был настроен для `DoiConfirmationMessage`, worker и
    queue state проверяются отдельно владельцем instance.
 
-## Проверка v2.0.5 для Mautic 7.1.3
+## Проверка v2.0.6 для Mautic 7.1.3
 
-Проверка source выполнена на tag `v2.0.5`:
+Проверка source выполнена на tag `v2.0.6`:
 
 - integration discovery aligned: `Integration/DoiReportIntegration.php`,
   service id `mautic.integration.doireport`, object name `DoiReport`;
+- duplicate exact-name `DoiReport` rows normalized deterministically: active
+  row wins over stale disabled row, stale duplicate is archived in place;
 - expected Plugins UI config route: `/s/plugins/config/DoiReport`;
 - public routes остались `/doi/{enc}` и `/nothuman/{hash}`;
 - tokens остались `{doi_url}` и `{doi_nothuman}`;

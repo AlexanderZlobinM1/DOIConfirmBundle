@@ -7,7 +7,9 @@ Plugins, choose DOI Confirm Bundle, configure `Doi Report`, and switch it on.
 The dedicated form action remains visible so operators can configure DOI
 settings, but while the integration is off the bundle does not execute form
 submissions, accept DOI links, expose report/webhook features, or apply queued
-contact changes.
+contact changes. If historical plugin reloads left duplicate `DoiReport`
+integration settings rows, the runtime keeps the active row authoritative and
+archives stale duplicates automatically.
 
 ![doi-confirm-plugin-form-action](https://user-images.githubusercontent.com/1366934/138834788-d4a7a685-d15e-4d95-9436-0623e3dbc287.png)
 

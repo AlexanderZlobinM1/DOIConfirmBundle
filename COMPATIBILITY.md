@@ -42,3 +42,14 @@ service id `mautic.integration.<lowercase-name>`. DOI now ships
 `plugin_integration_settings` row and expose `/s/plugins/config/DoiReport`.
 `Tests/integration-discovery.php` checks this convention without requiring a
 database.
+
+## Patch note for 2.0.6
+
+If a live instance already has historical duplicate exact-name `DoiReport`
+integration settings rows, DOI runtime now chooses deterministically: an active
+row wins over a disabled row, and the newest id wins within the same state. The
+resolver then performs a plugin-owned idempotent normalization by keeping the
+selected row named `DoiReport`, copying settings from a stale row only when the
+selected row is empty, renaming stale exact-name duplicates to
+`DoiReport.duplicate.<id>` and disabling them. No non-`DoiReport` integration
+rows are changed.
