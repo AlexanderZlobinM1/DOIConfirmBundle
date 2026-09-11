@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.0.10 - 2026-09-11
+
+- Add a `ru_RU` Russian translation catalog for Mautic installations that use
+  that locale code instead of `ru`.
+- Audit all shipped translation catalogs for current DOI UI keys, placeholder
+  parity and English fallback strings.
+- Polish German and English DOI labels that still contained fallback or legacy
+  wording.
+
 ## 2.0.9 - 2026-09-11
 
 - Add Russian (`ru`) and Serbian (`sr_RS`) translation catalogs for DOI form

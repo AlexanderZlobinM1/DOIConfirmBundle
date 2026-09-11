@@ -79,3 +79,11 @@ browser session state or changing Mautic core.
 Russian (`ru`) and Serbian (`sr_RS`) translation catalogs now cover the same
 DOI form action, report and webhook labels as `en_US` and `de_DE`. No runtime
 logic, storage schema, routes or dependency ranges changed.
+
+## Patch note for 2.0.10
+
+Mautic loads plugin translations from the exact `Translations/<locale>`
+directory. DOI now ships both `ru` and `ru_RU` Russian catalogs, plus `sr_RS`,
+so instances configured with either Russian locale code avoid English fallback
+labels. `Tests/translation-catalogs.php` audits all shipped locales for key
+parity, placeholder parity and known English fallback strings.
