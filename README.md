@@ -9,7 +9,9 @@ settings, but while the integration is off the bundle does not execute form
 submissions, accept DOI links, expose report/webhook features, or apply queued
 contact changes. If historical plugin reloads left duplicate `DoiReport`
 integration settings rows, the runtime keeps the active row authoritative and
-archives stale duplicates automatically.
+archives stale duplicates automatically. DOI page-hit tracking is best-effort;
+if Mautic tracking services are unavailable in delayed processing, confirmation
+actions continue and the tracking failure is logged.
 
 ![doi-confirm-plugin-form-action](https://user-images.githubusercontent.com/1366934/138834788-d4a7a685-d15e-4d95-9436-0623e3dbc287.png)
 

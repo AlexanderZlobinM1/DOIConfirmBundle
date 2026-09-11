@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.0.7 - 2026-09-11
+
+- Make DOI confirmation page-hit tracking best-effort so unavailable Mautic
+  tracking request services cannot abort audit, contact mutations, DNC removal,
+  webhook dispatch or redirect completion.
+- Log page-hit tracking failures with DOI context for operator diagnosis.
+- Add regression coverage for delayed synthetic-request handling with failing
+  page-hit tracking and synchronous tracking success.
+
 ## 2.0.6 - 2026-09-11
 
 - Make the `DoiReport` integration resolver deterministic when historical

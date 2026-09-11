@@ -7,6 +7,7 @@ use Mautic\LeadBundle\LeadEvents;
 use MauticPlugin\DOIConfirmBundle\Event\DoiSuccessful;
 use MauticPlugin\DOIConfirmBundle\Helper\LeadHelper;
 use MauticPlugin\DOIConfirmBundle\DoiEvents;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use MauticPlugin\DOIConfirmBundle\Service\PluginEnabledResolver;
@@ -35,8 +36,9 @@ class DoiActionHelper {
 
     private PluginEnabledResolver $pluginEnabledResolver;
 
+    private LoggerInterface $logger;
 
-    public function __construct($eventDispatcher, $ipLookupHelper, $pageModel, $emailModel, $auditLogModel, $leadModel, RequestStack $requestStack, PluginEnabledResolver $pluginEnabledResolver)
+    public function __construct($eventDispatcher, $ipLookupHelper, $pageModel, $emailModel, $auditLogModel, $leadModel, RequestStack $requestStack, PluginEnabledResolver $pluginEnabledResolver, LoggerInterface $logger)
     {
         $this->eventDispatcher = $eventDispatcher;
         $this->ipLookupHelper = $ipLookupHelper;
@@ -47,6 +49,7 @@ class DoiActionHelper {
         $this->requestStack = $requestStack;
         $this->request = $requestStack->getCurrentRequest();
         $this->pluginEnabledResolver = $pluginEnabledResolver;
+        $this->logger = $logger;
     }
 
     public function setRequest(?Request $request): void
@@ -123,7 +126,19 @@ class DoiActionHelper {
             $this->request->request->set('page_url', $config['url']);
             $this->request->query->set('page_url', $config['url']);
 
-            $this->pageModel->hitPage(null, $this->request, $code = '200', $lead);
+            try {
+                $this->pageModel->hitPage(null, $this->request, $code = '200', $lead);
+            } catch (\Throwable $exception) {
+                $this->logger->warning(
+                    'DOI confirmation page-hit tracking failed; confirmation actions will continue.',
+                    [
+                        'lead_id'   => $config['lead_id'] ?? null,
+                        'hash'      => $config['hash'] ?? null,
+                        'page_url'  => $config['url'] ?? null,
+                        'exception' => $exception,
+                    ]
+                );
+            }
         }
 
     }

@@ -38,7 +38,7 @@ $defaultIntegrationArguments = array_merge(
 return [
     'name'        => 'DOI Confirm Bundle',
     'description' => 'Adds a robust and flexible way to add a double-opt-in process (DOI) to any form in Mautic.',
-    'version'     => '2.0.6',
+    'version'     => '2.0.7',
     'author'      => 'Alexander Zlobin',
     'services' => [
         'events' => [
@@ -102,7 +102,7 @@ return [
             ],
             'jw.doi.actionhelper' => [
                 'class'     => \MauticPlugin\DOIConfirmBundle\Helper\DoiActionHelper::class,
-                'arguments' => ['event_dispatcher', 'mautic.helper.ip_lookup', 'mautic.page.model.page', 'mautic.email.model.email', 'mautic.core.model.auditlog', 'mautic.lead.model.lead', 'request_stack', 'jw.doi.plugin_enabled_resolver'],
+                'arguments' => ['event_dispatcher', 'mautic.helper.ip_lookup', 'mautic.page.model.page', 'mautic.email.model.email', 'mautic.core.model.auditlog', 'mautic.lead.model.lead', 'request_stack', 'jw.doi.plugin_enabled_resolver', 'monolog.logger.mautic'],
             ],
             'jw.doi.nothumanclickhelper' => [
                 'class'     => \MauticPlugin\DOIConfirmBundle\Helper\NotHumanClickHelper::class,

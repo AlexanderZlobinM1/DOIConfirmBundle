@@ -53,3 +53,12 @@ selected row named `DoiReport`, copying settings from a stale row only when the
 selected row is empty, renaming stale exact-name duplicates to
 `DoiReport.duplicate.<id>` and disabling them. No non-`DoiReport` integration
 rows are changed.
+
+## Patch note for 2.0.7
+
+DOI confirmation page-hit tracking is best-effort. If Mautic page tracking
+cannot run in a delayed Messenger/synthetic-request context, the plugin logs a
+warning and continues the confirmation flow: audit `confirm_doi`, tags,
+segments, field updates, DNC removal, webhook dispatch and the controller
+redirect are not aborted by the tracking failure. Synchronous request tracking
+still calls `PageModel::hitPage()` when available.
