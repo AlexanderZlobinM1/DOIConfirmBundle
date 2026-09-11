@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="560" viewBox="0 0 1180 560" role="img" aria-labelledby="title desc">
+  <title id="title">Жизненный цикл DOIConfirmBundle</title>
+  <desc id="desc">Схема показывает путь от отправки формы до подтверждения DOI, отложенной обработки, защиты от ботов и действий после успеха.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="11" markerHeight="11" refX="9" refY="5.5" orient="auto">
+      <path d="M0,0 L10,5.5 L0,11 Z" fill="#2f5f73"/>
+    </marker>
+    <style>
+      .canvas { fill: #f7f9fb; }
+      .box { fill: #ffffff; stroke: #8aa8b5; stroke-width: 2; rx: 8; }
+      .box-alt { fill: #eef7f1; stroke: #66a06f; stroke-width: 2; rx: 8; }
+      .box-warn { fill: #fff6df; stroke: #c99435; stroke-width: 2; rx: 8; }
+      .title { font: 700 22px Arial, sans-serif; fill: #17313b; }
+      .label { font: 700 16px Arial, sans-serif; fill: #17313b; }
+      .text { font: 14px Arial, sans-serif; fill: #263f49; }
+      .small { font: 12px Arial, sans-serif; fill: #4c626b; }
+      .arrow { stroke: #2f5f73; stroke-width: 2.4; fill: none; marker-end: url(#arrow); }
+      .arrow-warn { stroke: #a36d15; stroke-width: 2.4; fill: none; marker-end: url(#arrow); stroke-dasharray: 6 5; }
+    </style>
+  </defs>
+  <rect class="canvas" x="0" y="0" width="1180" height="560"/>
+  <text class="title" x="40" y="44">DOIConfirmBundle: основной поток подтверждения</text>
+  <text class="small" x="40" y="70">Mautic 5/6/7, версия 2.0.3. Плагин работает только когда integration Active включен.</text>
+
+  <rect class="box" x="40" y="120" width="190" height="105"/>
+  <text class="label" x="64" y="150">1. Форма</text>
+  <text class="text" x="64" y="178">Контакт отправляет</text>
+  <text class="text" x="64" y="198">Mautic form с DOI</text>
+
+  <rect class="box" x="285" y="120" width="220" height="105"/>
+  <text class="label" x="309" y="150">2. Form action</text>
+  <text class="text" x="309" y="178">Обязателен email</text>
+  <text class="text" x="309" y="198">с токеном {doi_url}</text>
+
+  <rect class="box" x="560" y="120" width="235" height="105"/>
+  <text class="label" x="584" y="150">3. DOI email</text>
+  <text class="text" x="584" y="178">Плагин подставляет URL</text>
+  <text class="text" x="584" y="198">/doi/{enc}</text>
+
+  <rect class="box-alt" x="850" y="120" width="250" height="105"/>
+  <text class="label" x="874" y="150">4. Подтверждение</text>
+  <text class="text" x="874" y="178">Контакт кликает</text>
+  <text class="text" x="874" y="198">/doi/{enc}</text>
+
+  <path class="arrow" d="M230 172 L282 172"/>
+  <path class="arrow" d="M505 172 L557 172"/>
+  <path class="arrow" d="M795 172 L847 172"/>
+
+  <rect class="box-warn" x="560" y="310" width="235" height="112"/>
+  <text class="label" x="584" y="340">Bot trap</text>
+  <text class="text" x="584" y="368">Опциональный токен</text>
+  <text class="text" x="584" y="388">{doi_nothuman}</text>
+  <text class="small" x="584" y="410">создает doi_&lt;hash&gt;.log</text>
+
+  <rect class="box-alt" x="850" y="310" width="250" height="112"/>
+  <text class="label" x="874" y="340">5. Success actions</text>
+  <text class="text" x="874" y="368">теги, сегменты, поля,</text>
+  <text class="text" x="874" y="388">DNC, audit, page hit,</text>
+  <text class="text" x="874" y="408">webhook DOI_SUCCESSFUL</text>
+
+  <rect class="box" x="285" y="310" width="220" height="112"/>
+  <text class="label" x="309" y="340">Messenger delay</text>
+  <text class="text" x="309" y="368">sync:// выполняет сразу</text>
+  <text class="text" x="309" y="388">async transport может</text>
+  <text class="text" x="309" y="408">дать задержку 60 сек.</text>
+
+  <path class="arrow" d="M975 225 L975 307"/>
+  <path class="arrow" d="M850 366 L798 366"/>
+  <path class="arrow" d="M560 366 L508 366"/>
+  <path class="arrow" d="M505 366 L847 366"/>
+  <path class="arrow-warn" d="M678 310 C678 270 678 252 678 226"/>
+  <text class="small" x="590" y="270">если bot-trap кликнут первым, delayed confirmation отменяется</text>
+
+  <rect class="box" x="40" y="310" width="190" height="112"/>
+  <text class="label" x="64" y="340">DI boundary</text>
+  <text class="text" x="64" y="368">Active выключен:</text>
+  <text class="text" x="64" y="388">нет actions, routes,</text>
+  <text class="text" x="64" y="408">webhooks, mutations</text>
+  <path class="arrow" d="M230 366 L282 366"/>
+</svg>

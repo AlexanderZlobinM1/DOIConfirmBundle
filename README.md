@@ -32,6 +32,8 @@ This version targets:
 - Mautic 5.x / 6.x / 7.x
 - PHP 8.1 - 8.4 (depending on your Mautic version requirements)
 
+Русская документация для операторов Mautic 7.1.3: [docs/ru/doi-confirmbundle-operator-guide.md](docs/ru/doi-confirmbundle-operator-guide.md).
+
 1. Donwload the ZIP file
 2. Extract it to a local directory
 3. Upload this bundle directory to your Mautic `/plugins/DOIConfirmBundle`
