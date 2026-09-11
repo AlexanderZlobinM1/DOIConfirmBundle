@@ -1,6 +1,6 @@
-# DOIConfirmBundle 2.0.4: руководство оператора
+# DOIConfirmBundle 2.0.5: руководство оператора
 
-Документ описывает canonical plugin source `DOIConfirmBundle` версии `2.0.4`
+Документ описывает canonical plugin source `DOIConfirmBundle` версии `2.0.5`
 для Mautic 5.x, 6.x и 7.x, включая проверенный сценарий Mautic 7.1.3.
 Live-установку, demo-цепочку и приемку на `news.show-master.ru` выполняет
 SalesSnap-Operation. Этот репозиторий содержит только source, документацию и
@@ -24,7 +24,8 @@ form action видно в builder всегда, чтобы оператор мо
 
 ## Lifecycle
 
-1. Оператор включает plugin integration `Doi Report`.
+1. Оператор обновляет/refresh plugin, открывает `Plugins`, выбирает
+   `DOI Confirm Bundle`, открывает `Doi Report` и включает integration.
 2. Оператор создает или выбирает email для DOI.
 3. В письме обязательно размещается token `{doi_url}`.
 4. Опционально в скрытую или не предназначенную для человека ссылку добавляется
@@ -170,18 +171,22 @@ instance, не plugin source task.
 
 Быстрые проверки без изменения Mautic core:
 
-1. Убедиться, что plugin version в Mautic registry равен `2.0.4`.
-2. Убедиться, что integration `Doi Report` active.
-3. Проверить, что form action сохранен с ключом `jw.email.send.lead`.
-4. Проверить, что выбранный email published и содержит `{doi_url}`.
-5. Если используется scanner protection, проверить наличие `{doi_nothuman}` в
+1. Убедиться, что plugin version в Mautic registry равен `2.0.5`.
+2. Убедиться, что `/s/plugins/config/DoiReport` открывается не 404, а обычной
+   страницей настройки integration.
+3. Убедиться, что integration `Doi Report` active.
+4. Проверить, что form action сохранен с ключом `jw.email.send.lead`.
+5. Проверить, что выбранный email published и содержит `{doi_url}`.
+6. Если используется scanner protection, проверить наличие `{doi_nothuman}` в
    скрытой/нечеловеческой ссылке, а не в видимой кнопке.
-6. Проверить, что redirect URL в `post_url` абсолютный и валидный.
-7. Проверить Mautic logs на ошибки dispatch или handler.
-8. Проверить `audit_log` для `bundle=lead`, `object=doi`,
+7. Проверить, что redirect URL в `post_url` абсолютный и валидный.
+8. Проверить Mautic logs на diagnostic:
+   `DOI runtime disabled: DoiReport integration settings are missing` или
+   `DOI runtime disabled: DoiReport integration is not active`.
+9. Проверить `audit_log` для `bundle=lead`, `object=doi`,
    `action=confirm_doi`.
-9. Проверить webhook queue/events для `doi.started` и `doi.successful`.
-10. Проверить cache path на одиночные test markers `doi_<hash>.log`.
+10. Проверить webhook queue/events для `doi.started` и `doi.successful`.
+11. Проверить cache path на одиночные test markers `doi_<hash>.log`.
 
 Safe cleanup для test DOI:
 
@@ -203,8 +208,8 @@ cache rebuild — отдельная operational operation.
 Rollback live instance выполняет SalesSnap-Operation штатным MCC/MCD путем.
 Plugin source contract для rollback:
 
-1. Предыдущий опубликованный tag: `v2.0.2`.
-2. Текущий опубликованный tag: `v2.0.4`.
+1. Предыдущий опубликованный tag: `v2.0.4`.
+2. Текущий опубликованный tag: `v2.0.5`.
 3. Bundle directory: `plugins/DOIConfirmBundle`.
 4. Runtime state хранится в Mautic form action config, integration settings,
    contacts, DNC, audit log и webhook queue; plugin rollback не должен purge
@@ -214,10 +219,13 @@ Plugin source contract для rollback:
 6. Если async Messenger был настроен для `DoiConfirmationMessage`, worker и
    queue state проверяются отдельно владельцем instance.
 
-## Проверка v2.0.4 для Mautic 7.1.3
+## Проверка v2.0.5 для Mautic 7.1.3
 
-Проверка source выполнена на tag `v2.0.4`:
+Проверка source выполнена на tag `v2.0.5`:
 
+- integration discovery aligned: `Integration/DoiReportIntegration.php`,
+  service id `mautic.integration.doireport`, object name `DoiReport`;
+- expected Plugins UI config route: `/s/plugins/config/DoiReport`;
 - public routes остались `/doi/{enc}` и `/nothuman/{hash}`;
 - tokens остались `{doi_url}` и `{doi_nothuman}`;
 - form action context остался `jw.email.send.lead`;

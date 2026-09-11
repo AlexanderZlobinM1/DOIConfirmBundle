@@ -31,3 +31,14 @@ Runtime execution, public endpoints and queued mutations remain guarded by the
 integration master switch. The custom form theme now uses the Mautic 7 Twig
 namespace path and renders the remaining DOI configuration fields with
 `form_rest()`.
+
+## Patch note for 2.0.5
+
+Mautic discovers plugin integrations by scanning `Integration/*Integration.php`,
+deriving the integration name from the filename, then looking for a matching
+service id `mautic.integration.<lowercase-name>`. DOI now ships
+`Integration/DoiReportIntegration.php` with service id
+`mautic.integration.doireport`, so plugin reload can create the normal
+`plugin_integration_settings` row and expose `/s/plugins/config/DoiReport`.
+`Tests/integration-discovery.php` checks this convention without requiring a
+database.

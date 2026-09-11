@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.0.5 - 2026-09-11
+
+- Register the `DoiReport` integration under Mautic's legacy discovery
+  convention (`Integration/DoiReportIntegration.php` and
+  `mautic.integration.doireport`) so it appears in the Plugins UI and can
+  create/update its normal Integration settings row.
+- Keep DOI runtime fail-closed when the integration is missing or disabled, but
+  log an explicit diagnostic instead of silently skipping every submission.
+- Add regression coverage for integration discovery, UI-config service naming
+  and the disabled/enabled resolver transition.
+
 ## 2.0.4 - 2026-09-11
 
 - Always register the dedicated DOI form action in the Mautic form action

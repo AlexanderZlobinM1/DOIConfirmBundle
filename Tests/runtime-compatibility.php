@@ -81,12 +81,18 @@ try {
         $container->getParameter('compat.services'),
         array_keys($bundles[$bundle]['config']['services']['integrations'] ?? [])
     ));
+    if (!in_array('mautic.integration.doireport', $services, true)) {
+        throw new RuntimeException('DoiReport integration service is not registered as mautic.integration.doireport.');
+    }
     foreach ($services as $id) {
         // Compilation alone misses a class-name string injected instead of a service.
         $service = $container->get($id);
         echo 'SERVICE '.$id.' '.get_class($service).PHP_EOL;
         if (!$service instanceof Mautic\PluginBundle\Integration\AbstractIntegration) {
             continue;
+        }
+        if ('mautic.integration.doireport' === $id && 'DoiReport' !== $service->getName()) {
+            throw new RuntimeException('DoiReport integration service name mismatch.');
         }
         $settings = new Mautic\PluginBundle\Entity\Integration();
         $settings->setName($service->getName());

@@ -13,9 +13,9 @@ namespace MauticPlugin\DOIConfirmBundle\Integration;
 
 use Mautic\PluginBundle\Integration\AbstractIntegration;
 
-class CustomReportIntegration extends AbstractIntegration
+class DoiReportIntegration extends AbstractIntegration
 {
-    const INTEGRATION_NAME = 'DoiReport';
+    public const INTEGRATION_NAME = 'DoiReport';
 
     public function getName()
     {
