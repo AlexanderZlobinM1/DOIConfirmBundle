@@ -31,6 +31,8 @@ class DoiActionHelper {
      */
     protected $request;
 
+    private RequestStack $requestStack;
+
     private PluginEnabledResolver $pluginEnabledResolver;
 
 
@@ -42,6 +44,7 @@ class DoiActionHelper {
         $this->emailModel = $emailModel;
         $this->auditLogModel = $auditLogModel;
         $this->leadModel = $leadModel;
+        $this->requestStack = $requestStack;
         $this->request = $requestStack->getCurrentRequest();
         $this->pluginEnabledResolver = $pluginEnabledResolver;
     }
@@ -76,12 +79,24 @@ class DoiActionHelper {
             return;
         }
 
-        $this->logDoiSuccess($config);
-        $this->updateLead($config);
-        $this->removeDNC($config['leadEmail'] ?? null);
-        $this->identifyLead($config['lead_id']);
-        $this->trackPageHit($config);
-        $this->fireWebhook($config);
+        $pushedRequest = false;
+        if ($this->request instanceof Request && $this->requestStack->getCurrentRequest() !== $this->request) {
+            $this->requestStack->push($this->request);
+            $pushedRequest = true;
+        }
+
+        try {
+            $this->logDoiSuccess($config);
+            $this->updateLead($config);
+            $this->removeDNC($config['leadEmail'] ?? null);
+            $this->identifyLead($config['lead_id']);
+            $this->trackPageHit($config);
+            $this->fireWebhook($config);
+        } finally {
+            if ($pushedRequest) {
+                $this->requestStack->pop();
+            }
+        }
     }
 
     public function fireWebhook($config) 

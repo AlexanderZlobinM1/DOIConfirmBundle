@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.0.3 - 2026-09-11
+
+- Preserve the original public DOI request context in Mautic's request stack
+  while delayed success actions run, so audit IP handling, page-hit tracking,
+  privacy headers and bot checks use the confirmation click rather than a CLI
+  fallback context.
+- Expand the runtime compatibility check to instantiate DOI listeners, helpers
+  and the message handler, not only the integration and form type services.
+- Document safe cleanup for test `{doi_nothuman}` markers.
+
 ## 2.0.2 — 2026-09-06
 
 - Support Mautic 7.2 while retaining the declared older Mautic versions.

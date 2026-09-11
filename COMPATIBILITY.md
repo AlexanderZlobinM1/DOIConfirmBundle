@@ -16,3 +16,9 @@ configured acceptance environment; a successful kernel test does not prove deliv
 ## Verified on 6 September 2026
 
 Fresh-kernel service instantiation and form construction/resolution passed on `7.2.0`, `7.1.3`, `6.0.9`, `5.2.10`. Mautic 5/6 used PHP 8.2.33; Mautic 7 used PHP 8.4.25. External delivery and OAuth/CAPTCHA provider exchanges were not exercised.
+
+## Patch note for 2.0.3
+
+The DOI success-action patch preserves the original click request in the local
+request stack while delayed processing runs. It does not change the declared
+Mautic/PHP dependency range, routes, schema, form action storage or token names.

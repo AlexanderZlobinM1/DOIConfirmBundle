@@ -49,13 +49,10 @@ class PluginCompatibilityKernel extends AppKernel
                     if ($definition->isAbstract() || !str_starts_with((string) $definition->getClass(), $prefix)) {
                         continue;
                     }
-                    if ($definition->hasTag('mautic.integration') || $definition->hasTag('mautic.basic_integration')
-                        || $definition->hasTag('mautic.config_integration') || $definition->hasTag('form.type')) {
-                        $definition->setPublic(true);
-                        $services[] = $id;
-                        if ($definition->hasTag('form.type')) {
-                            $forms[] = $definition->getClass();
-                        }
+                    $definition->setPublic(true);
+                    $services[] = $id;
+                    if ($definition->hasTag('form.type')) {
+                        $forms[] = $definition->getClass();
                     }
                 }
                 $container->setParameter('compat.services', $services);
@@ -85,24 +82,24 @@ try {
     ));
     foreach ($services as $id) {
         // Compilation alone misses a class-name string injected instead of a service.
-        $integration = $container->get($id);
-        echo 'SERVICE '.$id.' '.get_class($integration).PHP_EOL;
-        if (!$integration instanceof Mautic\PluginBundle\Integration\AbstractIntegration) {
+        $service = $container->get($id);
+        echo 'SERVICE '.$id.' '.get_class($service).PHP_EOL;
+        if (!$service instanceof Mautic\PluginBundle\Integration\AbstractIntegration) {
             continue;
         }
         $settings = new Mautic\PluginBundle\Entity\Integration();
-        $settings->setName($integration->getName());
+        $settings->setName($service->getName());
         $settings->setIsPublished(false);
-        $integration->setIntegrationSettings($settings);
+        $service->setIntegrationSettings($settings);
         $form = $container->get('form.factory')->create(Mautic\PluginBundle\Form\Type\DetailsType::class, $settings, [
-            'integration' => $integration->getName(),
-            'integration_object' => $integration,
+            'integration' => $service->getName(),
+            'integration_object' => $service,
             'lead_fields' => [],
             'company_fields' => [],
             'csrf_protection' => false,
         ]);
         $form->createView();
-        echo 'SETTINGS '.$integration->getName().PHP_EOL;
+        echo 'SETTINGS '.$service->getName().PHP_EOL;
     }
     foreach ($container->getParameter('compat.forms') as $formType) {
         $container->get('form.registry')->getType($formType);

@@ -64,6 +64,9 @@ Add this token:
 ````
 
 Otherwise, your email doesn't need to be special in any way. 
+To suppress automated link scanners, add `{doi_nothuman}` only to a hidden or
+non-human tracking link. When that URL is requested before the delayed DOI
+confirmation runs, the pending confirmation is canceled.
 
 Next create a new form. In the actions section, add a new action "Manage DOUBLE OPTIN (DOI) confirmation via email". 
 This is the action provided by the plugin.
@@ -76,6 +79,16 @@ That's it!
 ## Known Issues
 
 - The audit log is only accessible via the database at the moment.
+
+## Safe cleanup for test DOI links
+
+The `{doi_nothuman}` bot-trap endpoint stores a temporary marker named
+`doi_<hash>.log` in Mautic's cache directory. To clean up test markers, remove
+only files matching that exact prefix and suffix from the active cache path, for
+example `var/cache/<env>/doi_<hash>.log` or the path returned by Mautic's cache
+configuration. Do not remove the whole cache directory as part of DOI test
+cleanup unless the instance owner has explicitly requested a normal Mautic cache
+rebuild.
 
 
 ## FAQ
