@@ -11,11 +11,15 @@
 
 namespace MauticPlugin\DOIConfirmBundle\EventListener;
 
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Mautic\FormBundle\Event as Events;
 use Mautic\FormBundle\FormEvents;
+use Mautic\FormBundle\Entity\Action;
 use Mautic\LeadBundle\Entity\Lead;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Mautic\LeadBundle\Tracker\ContactTracker;
 use MauticPlugin\DOIConfirmBundle\Entity\DoNotContact as DNC;
 use MauticPlugin\DOIConfirmBundle\Helper\LeadHelper;
@@ -31,6 +35,7 @@ use Psr\Log\LoggerInterface;
  */
 class FormSubscriber implements EventSubscriberInterface
 {
+    private const ACTION_KEY = 'jw.email.send.lead';
 
     protected $router;
     
@@ -48,12 +53,16 @@ class FormSubscriber implements EventSubscriberInterface
 
     private LoggerInterface $logger;
 
+    private RequestStack $requestStack;
+
+    private EntityManagerInterface $entityManager;
+
 
     /**
      * FormSubscriber constructor.
      *
      */
-    public function __construct($router, $eventDispatcher, $encryptionHelper, $emailModel, $leadModel, ContactTracker $contactTracker, PluginEnabledResolver $pluginEnabledResolver, LoggerInterface $logger)
+    public function __construct($router, $eventDispatcher, $encryptionHelper, $emailModel, $leadModel, ContactTracker $contactTracker, PluginEnabledResolver $pluginEnabledResolver, LoggerInterface $logger, RequestStack $requestStack, EntityManagerInterface $entityManager)
     {
         $this->router = $router;
         $this->eventDispatcher = $eventDispatcher;
@@ -63,6 +72,8 @@ class FormSubscriber implements EventSubscriberInterface
         $this->contactTracker = $contactTracker;
         $this->pluginEnabledResolver = $pluginEnabledResolver;
         $this->logger = $logger;
+        $this->requestStack = $requestStack;
+        $this->entityManager = $entityManager;
     }
 
     /**
@@ -85,8 +96,21 @@ class FormSubscriber implements EventSubscriberInterface
      */
     public function onFormBuilder(Events\FormBuilderEvent $event)
     {
+        if (!$this->pluginEnabledResolver->isEnabled()) {
+            if ($this->currentFormHasDoiAction()) {
+                $event->addSubmitAction(self::ACTION_KEY, $this->getDisabledDoiAction());
+            }
+
+            return;
+        }
+
+        $event->addSubmitAction(self::ACTION_KEY, $this->getEnabledDoiAction());
+    }
+
+    private function getEnabledDoiAction(): array
+    {
         // Send email to lead
-        $action = [
+        return [
             'group'           => 'mautic.email.actions',
             'label'           => 'jw.mautic.email.form.action.sendemail.lead',
             'description'     => 'jw.mautic.email.form.action.sendemail.lead.descr',
@@ -96,8 +120,100 @@ class FormSubscriber implements EventSubscriberInterface
             'eventName'       => FormEvents::ON_EXECUTE_SUBMIT_ACTION,
             'allowCampaignForm' => true,            
         ];
+    }
 
-        $event->addSubmitAction('jw.email.send.lead', $action);
+    private function getDisabledDoiAction(): array
+    {
+        $action = $this->getEnabledDoiAction();
+        $action['description'] = 'jw.mautic.email.form.action.sendemail.lead.disabled.descr';
+        $action['template'] = '@DOIConfirm/FormTheme/EmailSendList/disabled_emailsend_action.html.twig';
+        $action['disabled'] = true;
+
+        return $action;
+    }
+
+    private function currentFormHasDoiAction(): bool
+    {
+        $request = $this->requestStack->getCurrentRequest();
+        if (!$request instanceof Request) {
+            return false;
+        }
+
+        $formId = $this->resolveCurrentFormId($request);
+        if (null === $formId) {
+            return false;
+        }
+
+        if ($this->sessionHasDoiAction($request, $formId)) {
+            return true;
+        }
+
+        return $this->storedFormHasDoiAction($formId);
+    }
+
+    private function resolveCurrentFormId(Request $request): ?string
+    {
+        $candidates = [
+            $request->attributes->get('objectId'),
+            $request->query->get('objectId'),
+            $request->query->get('formId'),
+            ($request->request->all()['formaction'] ?? [])['formId'] ?? null,
+            ($request->request->all()['mauticform'] ?? [])['sessionId'] ?? null,
+            $request->request->get('formId'),
+        ];
+
+        foreach ($candidates as $candidate) {
+            if (is_scalar($candidate) && '' !== (string) $candidate) {
+                return (string) $candidate;
+            }
+        }
+
+        return null;
+    }
+
+    private function sessionHasDoiAction(Request $request, string $formId): bool
+    {
+        if (!$request->hasSession()) {
+            return false;
+        }
+
+        $actions = $request->getSession()->get(sprintf('mautic.form.%s.actions.modified', $formId), []);
+        foreach ($actions as $action) {
+            if (is_array($action) && self::ACTION_KEY === ($action['type'] ?? null)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function storedFormHasDoiAction(string $formId): bool
+    {
+        if (!ctype_digit($formId)) {
+            return false;
+        }
+
+        try {
+            $result = $this->entityManager->createQueryBuilder()
+                ->select('1')
+                ->from(Action::class, 'a')
+                ->where('a.type = :type')
+                ->andWhere('IDENTITY(a.form) = :formId')
+                ->setParameter('type', self::ACTION_KEY)
+                ->setParameter('formId', (int) $formId)
+                ->setMaxResults(1)
+                ->getQuery()
+                ->getOneOrNullResult();
+        } catch (\Throwable $exception) {
+            $this->logger->warning('DOI disabled form action lookup failed; preserved action placeholder was not registered.', [
+                'form_id' => $formId,
+                'exception' => $exception,
+            ]);
+
+            return false;
+        }
+
+        return null !== $result;
     }
 
     private function leadFieldUpdate($config, $lead)
@@ -309,7 +425,7 @@ class FormSubscriber implements EventSubscriberInterface
         }
 
         //only action if this is our form action
-        if (!$event->checkContext('jw.email.send.lead')) {
+        if (!$event->checkContext(self::ACTION_KEY)) {
             return;
         }
 

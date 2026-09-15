@@ -1,5 +1,18 @@
 # Changelog
 
+## 2.0.13 - 2026-09-15
+
+- Keep Mautic's native `Doi Report` Active switch as the runtime lifecycle
+  boundary, but hide DOI from the new submit-action chooser while inactive.
+- Preserve existing configured DOI form actions while inactive by registering a
+  disabled builder placeholder only for forms that already contain
+  `jw.email.send.lead`.
+- Render inactive existing DOI actions as disabled/non-editable rows so they do
+  not look executable and do not expose builder action controls while their
+  stored settings remain intact through form saves.
+- Extend Mautic 6/7 runtime and DB-free regression coverage for inactive UI
+  registration, existing action preservation and locale catalog parity.
+
 ## 2.0.12 - 2026-09-15
 
 - Make the pre-email pending DOI tag/segment update best-effort so a tag,

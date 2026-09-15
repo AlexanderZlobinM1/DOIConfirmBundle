@@ -112,26 +112,61 @@ try {
         $container->get('form.registry')->getType($formType);
         echo 'FORM '.$formType.PHP_EOL;
     }
-    $formBuilderEvent = new Mautic\FormBundle\Event\FormBuilderEvent($container->get('translator'));
-    $container->get('jw.mautic.email.formbundle.subscriber')->onFormBuilder($formBuilderEvent);
-    $submitActions = $formBuilderEvent->getSubmitActions();
+    $subscriber = $container->get('jw.mautic.email.formbundle.subscriber');
+    $emptyDisabledBuilderEvent = new Mautic\FormBundle\Event\FormBuilderEvent($container->get('translator'));
+    $subscriber->onFormBuilder($emptyDisabledBuilderEvent);
+    if (isset($emptyDisabledBuilderEvent->getSubmitActions()['jw.email.send.lead'])) {
+        throw new RuntimeException('Disabled DoiReport exposed DOI for a form without a saved DOI action.');
+    }
+
+    $request->getSession()->set('mautic.form.42.actions.modified', [
+        123 => [
+            'id' => 123,
+            'type' => 'jw.email.send.lead',
+            'name' => 'ru Подтверждение подписки DOI плагин TEST (19)',
+            'description' => '',
+            'order' => 0,
+            'properties' => [
+                'email' => 19,
+                'add_campaign_doi_success_tags' => ['confirmed'],
+                'remove_tags_doi_success_tags' => ['pending'],
+                'add_campaign_doi_success_lists' => [6],
+                'remove_campaign_doi_success_lists' => [4],
+                'post_url' => 'https://www.show-master.ru',
+                'lead_field_update' => 'optin_status=Confirmed',
+                'lead_field_update_before' => 'optin_status=Started',
+                'alternative_email_field' => 'email_validate',
+            ],
+        ],
+    ]);
+    $request->attributes->set('objectId', 42);
+    $disabledExistingBuilderEvent = new Mautic\FormBundle\Event\FormBuilderEvent($container->get('translator'));
+    $subscriber->onFormBuilder($disabledExistingBuilderEvent);
+    $submitActions = $disabledExistingBuilderEvent->getSubmitActions();
     $doiAction = $submitActions['jw.email.send.lead'] ?? null;
     if (!is_array($doiAction)) {
-        throw new RuntimeException('DOI submit action jw.email.send.lead was not registered.');
+        throw new RuntimeException('Disabled DoiReport did not preserve an existing DOI submit action for the form builder.');
     }
     $expectedAction = [
         'group'     => 'mautic.email.actions',
         'formType'  => MauticPlugin\DOIConfirmBundle\Form\Type\EmailSendType::class,
         'formTheme' => '@DOIConfirm/FormTheme/EmailSendList/emailsend_list_row.html.twig',
         'eventName' => Mautic\FormBundle\FormEvents::ON_EXECUTE_SUBMIT_ACTION,
+        'template'  => '@DOIConfirm/FormTheme/EmailSendList/disabled_emailsend_action.html.twig',
     ];
     foreach ($expectedAction as $key => $value) {
         if (($doiAction[$key] ?? null) !== $value) {
-            throw new RuntimeException(sprintf('DOI submit action %s mismatch.', $key));
+            throw new RuntimeException(sprintf('Disabled DOI submit action %s mismatch.', $key));
         }
+    }
+    if (true !== ($doiAction['disabled'] ?? false)) {
+        throw new RuntimeException('Disabled DOI submit action did not expose disabled metadata.');
     }
     if (!$container->get('twig')->getLoader()->exists($doiAction['formTheme'])) {
         throw new RuntimeException(sprintf('DOI submit action form theme %s was not found.', $doiAction['formTheme']));
+    }
+    if (!$container->get('twig')->getLoader()->exists($doiAction['template'])) {
+        throw new RuntimeException(sprintf('Disabled DOI action builder template %s was not found.', $doiAction['template']));
     }
     $propertiesBuilder = new Symfony\Component\Form\FormBuilder(
         'doi_action_properties',
@@ -162,7 +197,7 @@ try {
             throw new RuntimeException(sprintf('DOI submit action properties field %s was not registered.', $field));
         }
     }
-    echo 'ACTION jw.email.send.lead '.($doiAction['label'] ?? '').PHP_EOL;
+    echo 'ACTION jw.email.send.lead disabled-existing '.($doiAction['label'] ?? '').PHP_EOL;
     echo 'ACTION_FIELDS '.implode(',', $expectedFields).PHP_EOL;
     echo 'PASS '.$bundle.' Mautic '.$kernel->getVersion().' PHP '.PHP_VERSION.PHP_EOL;
 } catch (Throwable $exception) {

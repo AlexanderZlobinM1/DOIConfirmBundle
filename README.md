@@ -4,10 +4,13 @@ Adds a robust and flexible way to add a double-opt-in process (DOI) to any form 
 
 The `Doi Report` integration's Active switch is the runtime master switch. Open
 Plugins, choose DOI Confirm Bundle, configure `Doi Report`, and switch it on.
-The dedicated form action remains visible so operators can configure DOI
-settings, but while the integration is off the bundle does not execute form
-submissions, accept DOI links, expose report/webhook features, or apply queued
-contact changes. If historical plugin reloads left duplicate `DoiReport`
+When the integration is off, the dedicated DOI form action is hidden from the
+new submit-action chooser. Forms that already contain a DOI action still open
+normally: the saved action is shown as disabled/preserved, keeps its stored
+settings through form saves, and does not execute. While the integration is off
+the bundle does not execute form submissions, accept DOI links, expose
+report/webhook features, or apply queued contact changes. If historical plugin
+reloads left duplicate `DoiReport`
 integration settings rows, the runtime keeps the active row authoritative and
 archives stale duplicates automatically. DOI page-hit tracking is best-effort;
 if Mautic tracking services are unavailable in delayed processing, confirmation

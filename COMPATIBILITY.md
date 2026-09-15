@@ -107,3 +107,16 @@ abort the DOI action before `EmailModel::sendEmail()` and `doi.started` run.
 2.0.12 keeps the pending-state behavior but makes that pre-email mutation
 best-effort and logs a warning. DOI email dispatch continues; confirmation
 success actions remain unchanged.
+
+## Patch note for 2.0.13
+
+Mautic's native integration details form always owns the `isPublished` / Active
+switch for integration lifecycle. DOI keeps that switch as the only runtime
+boundary. When `Doi Report` is inactive, new forms and forms without saved DOI
+actions do not receive `jw.email.send.lead` in the add-action registry, so DOI
+is absent from the "Add a new submit action" chooser. Forms that already store
+`jw.email.send.lead` receive a plugin-owned disabled placeholder under the same
+action key, with the normal `EmailSendType` and storage keys intact. This lets
+Mautic load the existing action into the builder session and save the form
+without silently dropping DOI configuration. The disabled builder row has no
+edit/delete action controls and runtime handlers remain fail-closed.

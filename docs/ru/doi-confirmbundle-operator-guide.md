@@ -1,6 +1,6 @@
-# DOIConfirmBundle 2.0.12: руководство оператора
+# DOIConfirmBundle 2.0.13: руководство оператора
 
-Документ описывает canonical plugin source `DOIConfirmBundle` версии `2.0.12`
+Документ описывает canonical plugin source `DOIConfirmBundle` версии `2.0.13`
 для Mautic 5.x, 6.x и 7.x, включая проверенный сценарий Mautic 7.1.3.
 Live-установку, demo-цепочку и приемку на `news.show-master.ru` выполняет
 SalesSnap-Operation. Этот репозиторий содержит только source, документацию и
@@ -16,11 +16,15 @@ plugin-owned compatibility evidence.
 удаляет теги, добавляет или удаляет сегменты, обновляет поля контакта, снимает
 email DNC, пишет audit log, регистрирует page hit и отправляет webhook event.
 
-Главный runtime-переключатель — `Active` у integration `Doi Report`. Отдельное
-form action видно в builder всегда, чтобы оператор мог настроить DOI через UI.
-Когда integration выключена, плагин не выполняет form submissions, не
-показывает report/webhook события, не принимает public DOI endpoints и не
-применяет queued mutations.
+Главный runtime-переключатель — `Active` у integration `Doi Report`. Когда
+integration выключена, новая DOI-action не видна в `Add a new submit action`.
+Если форма уже содержит DOI-action `jw.email.send.lead`, builder открывается
+нормально: существующая action отображается как отключенная/сохраненная,
+не выглядит исполняемой, не открывает controls редактирования/удаления и
+сохраняет существующие properties при сохранении формы. При выключенной
+integration плагин также не выполняет form submissions, не показывает
+report/webhook события, не принимает public DOI endpoints и не применяет queued
+mutations.
 
 ## Lifecycle
 
@@ -174,7 +178,7 @@ instance, не plugin source task.
 
 Быстрые проверки без изменения Mautic core:
 
-1. Убедиться, что plugin version в Mautic registry равен `2.0.12`.
+1. Убедиться, что plugin version в Mautic registry равен `2.0.13`.
 2. Убедиться, что `/s/plugins/config/DoiReport` открывается не 404, а обычной
    страницей настройки integration.
 3. Убедиться, что integration `Doi Report` active.
@@ -200,6 +204,15 @@ instance, не plugin source task.
    `action=confirm_doi`.
 10. Проверить webhook queue/events для `doi.started` и `doi.successful`.
 11. Проверить cache path на одиночные test markers `doi_<hash>.log`.
+12. При `Doi Report Active=No` открыть новую форму или форму без DOI-action и
+    убедиться, что DOI отсутствует в chooser `Add a new submit action`.
+13. При `Doi Report Active=No` открыть форму с уже настроенной
+    `jw.email.send.lead`, убедиться, что Mautic builder не падает, action
+    показана как `Отключено`, не выглядит исполняемой, а сохранение формы без
+    изменений не удаляет ее properties.
+14. Проверить цикл `Active=No -> Active=Yes -> Active=No`: без reinstall и без
+    потери настроек существующая DOI-action снова становится обычной при
+    включении и снова preserved/disabled при выключении.
 
 Safe cleanup для test DOI:
 
@@ -221,8 +234,8 @@ cache rebuild — отдельная operational operation.
 Rollback live instance выполняет SalesSnap-Operation штатным MCC/MCD путем.
 Plugin source contract для rollback:
 
-1. Предыдущий опубликованный tag: `v2.0.10`.
-2. Текущий опубликованный tag: `v2.0.12`.
+1. Предыдущий опубликованный tag: `v2.0.12`.
+2. Текущий опубликованный tag: `v2.0.13`.
 3. Bundle directory: `plugins/DOIConfirmBundle`.
 4. Runtime state хранится в Mautic form action config, integration settings,
    contacts, DNC, audit log и webhook queue; plugin rollback не должен purge
@@ -232,9 +245,9 @@ Plugin source contract для rollback:
 6. Если async Messenger был настроен для `DoiConfirmationMessage`, worker и
    queue state проверяются отдельно владельцем instance.
 
-## Проверка v2.0.12 для Mautic 7.1.3
+## Проверка v2.0.13 для Mautic 7.x
 
-Проверка source выполнена на tag `v2.0.12`:
+Проверка source выполнена на tag `v2.0.13`:
 
 - integration discovery aligned: `Integration/DoiReportIntegration.php`,
   service id `mautic.integration.doireport`, object name `DoiReport`;
@@ -265,6 +278,13 @@ Plugin source contract для rollback:
 - expanded runtime service/form check был выполнен на локальном Mautic 7.x
   install и инстанцировал controller, listeners, handler, helpers, integration
   и form type.
+- inactive empty-form path скрывает `jw.email.send.lead` из add-action registry;
+- inactive existing-action path регистрирует disabled placeholder только для
+  форм, где `jw.email.send.lead` уже сохранен в builder session или storage;
+- disabled existing-action template убирает DOI option из chooser,
+  показывает disabled status и не выводит edit/delete controls;
+- локальный runtime compatibility check пройден на Mautic `7.2.0` и `6.0.0`
+  с новым service wiring `request_stack` + `doctrine.orm.entity_manager`.
 
 Ограничение evidence: live delivery, live webhook receiver, live queue worker и
 customer-host installation не выполнялись в plugin source task.

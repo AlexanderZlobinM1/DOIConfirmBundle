@@ -264,6 +264,45 @@ function doi_test_enabled_resolver(): MauticPlugin\DOIConfirmBundle\Service\Plug
     );
 }
 
+function doi_test_disabled_resolver(): MauticPlugin\DOIConfirmBundle\Service\PluginEnabledResolver
+{
+    return new MauticPlugin\DOIConfirmBundle\Service\PluginEnabledResolver(
+        new DoiTestEntityManager(new DoiTestRepository([doi_test_integration(36, false)])),
+        new DoiTestLogger()
+    );
+}
+
+function doi_test_form_subscriber(
+    MauticPlugin\DOIConfirmBundle\Service\PluginEnabledResolver $resolver,
+    Symfony\Component\HttpFoundation\RequestStack $requestStack,
+    Doctrine\ORM\EntityManagerInterface $entityManager
+): MauticPlugin\DOIConfirmBundle\EventListener\FormSubscriber {
+    $subscriber = (new ReflectionClass(MauticPlugin\DOIConfirmBundle\EventListener\FormSubscriber::class))
+        ->newInstanceWithoutConstructor();
+
+    foreach ([
+        'pluginEnabledResolver' => $resolver,
+        'requestStack' => $requestStack,
+        'entityManager' => $entityManager,
+        'logger' => new DoiTestLogger(),
+    ] as $property => $value) {
+        $reflectionProperty = new ReflectionProperty(MauticPlugin\DOIConfirmBundle\EventListener\FormSubscriber::class, $property);
+        $reflectionProperty->setValue($subscriber, $value);
+    }
+
+    return $subscriber;
+}
+
+function doi_test_request_stack(?Symfony\Component\HttpFoundation\Request $request = null): Symfony\Component\HttpFoundation\RequestStack
+{
+    $requestStack = new Symfony\Component\HttpFoundation\RequestStack();
+    if ($request instanceof Symfony\Component\HttpFoundation\Request) {
+        $requestStack->push($request);
+    }
+
+    return $requestStack;
+}
+
 function doi_test_action_config(): array
 {
     return [
@@ -364,6 +403,83 @@ if (0 !== $idempotentEntityManager->flushes) {
     throw new RuntimeException('Normalized DoiReport integration should not flush on a second pass.');
 }
 
+$translator = new Symfony\Component\Translation\IdentityTranslator();
+$activeBuilderEvent = new Mautic\FormBundle\Event\FormBuilderEvent($translator);
+doi_test_form_subscriber(
+    doi_test_enabled_resolver(),
+    doi_test_request_stack(),
+    new DoiTestEntityManager(new DoiTestRepository([]))
+)->onFormBuilder($activeBuilderEvent);
+$activeSubmitActions = $activeBuilderEvent->getSubmitActions();
+$activeDoiAction = $activeSubmitActions['jw.email.send.lead'] ?? null;
+if (!is_array($activeDoiAction) || ($activeDoiAction['formType'] ?? null) !== MauticPlugin\DOIConfirmBundle\Form\Type\EmailSendType::class) {
+    throw new RuntimeException('Enabled DoiReport did not register the normal DOI submit action.');
+}
+if (isset($activeDoiAction['template']) || !empty($activeDoiAction['disabled'])) {
+    throw new RuntimeException('Enabled DOI submit action was registered with disabled UI metadata.');
+}
+
+$disabledNoFormBuilderEvent = new Mautic\FormBundle\Event\FormBuilderEvent($translator);
+doi_test_form_subscriber(
+    doi_test_disabled_resolver(),
+    doi_test_request_stack(Symfony\Component\HttpFoundation\Request::create('https://example.test/s/forms/new')),
+    new DoiTestEntityManager(new DoiTestRepository([]))
+)->onFormBuilder($disabledNoFormBuilderEvent);
+if (isset($disabledNoFormBuilderEvent->getSubmitActions()['jw.email.send.lead'])) {
+    throw new RuntimeException('Disabled DoiReport exposed DOI in the add-action list for a form without saved DOI action.');
+}
+
+$disabledRequest = Symfony\Component\HttpFoundation\Request::create('https://example.test/s/forms/edit/42');
+$disabledRequest->attributes->set('objectId', 42);
+$disabledRequest->setSession(new Symfony\Component\HttpFoundation\Session\Session(
+    new Symfony\Component\HttpFoundation\Session\Storage\MockArraySessionStorage()
+));
+$savedDoiProperties = [
+    'email' => 19,
+    'add_campaign_doi_success_tags' => ['confirmed'],
+    'remove_tags_doi_success_tags' => ['pending'],
+    'add_campaign_doi_success_lists' => [6],
+    'remove_campaign_doi_success_lists' => [4],
+    'post_url' => 'https://www.show-master.ru',
+    'lead_field_update' => 'optin_status=Confirmed',
+    'lead_field_update_before' => 'optin_status=Started',
+    'alternative_email_field' => 'email_validate',
+];
+$disabledRequest->getSession()->set('mautic.form.42.actions.modified', [
+    123 => [
+        'id' => 123,
+        'type' => 'jw.email.send.lead',
+        'name' => 'ru Подтверждение подписки DOI плагин TEST (19)',
+        'description' => '',
+        'order' => 0,
+        'properties' => $savedDoiProperties,
+    ],
+]);
+$disabledExistingBuilderEvent = new Mautic\FormBundle\Event\FormBuilderEvent($translator);
+doi_test_form_subscriber(
+    doi_test_disabled_resolver(),
+    doi_test_request_stack($disabledRequest),
+    new DoiTestEntityManager(new DoiTestRepository([]))
+)->onFormBuilder($disabledExistingBuilderEvent);
+$disabledExistingAction = $disabledExistingBuilderEvent->getSubmitActions()['jw.email.send.lead'] ?? null;
+if (!is_array($disabledExistingAction)) {
+    throw new RuntimeException('Disabled DoiReport did not register a preserved placeholder for an existing DOI action.');
+}
+if (($disabledExistingAction['template'] ?? null) !== '@DOIConfirm/FormTheme/EmailSendList/disabled_emailsend_action.html.twig' || true !== ($disabledExistingAction['disabled'] ?? false)) {
+    throw new RuntimeException('Disabled existing DOI action did not use disabled UI metadata.');
+}
+if ($savedDoiProperties !== $disabledRequest->getSession()->get('mautic.form.42.actions.modified')[123]['properties']) {
+    throw new RuntimeException('Disabled existing DOI action did not preserve stored action properties in session.');
+}
+$disabledTemplate = dirname(__DIR__).'/Resources/views/FormTheme/EmailSendList/disabled_emailsend_action.html.twig';
+if (!is_file($disabledTemplate)) {
+    throw new RuntimeException('Disabled existing DOI action template is missing.');
+}
+$disabledTemplateSource = file_get_contents($disabledTemplate);
+if (!str_contains($disabledTemplateSource, 'action_jw.email.send.lead') || !str_contains($disabledTemplateSource, 'chosen:updated')) {
+    throw new RuntimeException('Disabled existing DOI action template does not hide DOI from the add-action chooser.');
+}
+
 $delayedRequestStack = new Symfony\Component\HttpFoundation\RequestStack();
 $delayedDispatcher = new DoiTestEventDispatcher($delayedRequestStack);
 $delayedPageModel = new DoiTestPageModel(true);
@@ -443,5 +559,6 @@ if ([] !== $syncLogger->records) {
 
 echo 'DISCOVERY DoiReport mautic.integration.doireport'.PHP_EOL;
 echo 'RESOLVER missing=false disabled=false enabled=true duplicate-active=true normalization=idempotent'.PHP_EOL;
+echo 'FORM_BUILDER active-action=normal disabled-new=hidden disabled-existing=preserved'.PHP_EOL;
 echo 'DOI_ACTIONS delayed-sessionless=ok delayed-tracking-failure=nonfatal sync-session=ok sync-tracking=ok'.PHP_EOL;
 echo 'PASS DOI integration discovery'.PHP_EOL;
