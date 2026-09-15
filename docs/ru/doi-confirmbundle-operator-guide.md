@@ -1,6 +1,6 @@
-# DOIConfirmBundle 2.1.2: руководство оператора
+# DOIConfirmBundle 2.1.3: руководство оператора
 
-Документ описывает canonical plugin source `DOIConfirmBundle` версии `2.1.2`
+Документ описывает canonical plugin source `DOIConfirmBundle` версии `2.1.3`
 для Mautic 5.x, 6.x и 7.x, включая проверенный сценарий Mautic 7.1.3.
 Live-установку, demo-цепочку и приемку на `news.show-master.ru` выполняет
 SalesSnap-Operation. Этот репозиторий содержит только source, документацию и
@@ -195,7 +195,7 @@ instance, не plugin source task.
 
 Быстрые проверки без изменения Mautic core:
 
-1. Убедиться, что plugin version в Mautic registry равен `2.1.2`.
+1. Убедиться, что plugin version в Mautic registry равен `2.1.3`.
 2. Убедиться, что `/s/plugins/config/DoiReport` открывается не 404, а обычной
    страницей настройки integration.
 3. Убедиться, что integration `Doi Report` active.
@@ -256,8 +256,8 @@ cache rebuild — отдельная operational operation.
 Rollback live instance выполняет SalesSnap-Operation штатным MCC/MCD путем.
 Plugin source contract для rollback:
 
-1. Предыдущий опубликованный tag: `v2.0.13`.
-2. Текущий опубликованный tag: `v2.1.2`.
+1. Предыдущий опубликованный tag: `v2.1.2`.
+2. Текущий опубликованный tag: `v2.1.3`.
 3. Bundle directory: `plugins/DOIConfirmBundle`.
 4. Runtime state хранится в Mautic form action config, integration settings,
    contacts, DNC, audit log и webhook queue; plugin rollback не должен purge
@@ -267,9 +267,9 @@ Plugin source contract для rollback:
 6. Если async Messenger был настроен для `DoiConfirmationMessage`, worker и
    queue state проверяются отдельно владельцем instance.
 
-## Проверка v2.1.2 для Mautic 7.x
+## Проверка v2.1.3 для Mautic 6.x и 7.x
 
-Проверка source выполнена на tag `v2.1.2`:
+Проверка source выполнена для release `v2.1.3`:
 
 - integration discovery aligned: `Integration/DoiReportIntegration.php`,
   service id `mautic.integration.doireport`, object name `DoiReport`;
@@ -281,7 +281,10 @@ Plugin source contract для rollback:
   call `RequestStack::getSession()`;
 - synchronous page-hit tracking still calls `PageModel::hitPage()` when
   available;
-- Russian (`ru`, `ru_RU`) and Serbian (`sr_RS`) catalogs contain the same 18
+- оба email-блока рендерятся одним штатным Mautic
+  `emailsend_list_row`, а unchecked owner-блок получает `hidden`,
+  `display:none`, `data-show-on` и прямой checkbox toggle;
+- Russian (`ru`, `ru_RU`) and Serbian (`sr_RS`) catalogs contain the same 21
   message keys as `en_US` without known English fallback UI labels;
 - initial submit applies pending DOI tags/segments from the existing
   remove-after-success settings, while confirmation removes pending state and

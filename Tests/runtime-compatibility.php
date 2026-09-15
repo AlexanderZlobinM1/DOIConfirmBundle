@@ -170,7 +170,6 @@ try {
     }
     foreach ([
         '@MauticEmail/FormTheme/EmailSendList/emailsend_list_row.html.twig',
-        '@MauticEmail/FormTheme/FormAction/_formaction_properties_useremail_row.html.twig',
     ] as $nativeEmailTheme) {
         if (!$container->get('twig')->getLoader()->exists($nativeEmailTheme)) {
             throw new RuntimeException(sprintf('Native Mautic email form theme %s was not found.', $nativeEmailTheme));
@@ -217,7 +216,67 @@ try {
     if (!$ownerEmailBuilder->has('useremail') || !$ownerEmailBuilder->has('user_id')) {
         throw new RuntimeException('DOI owner email properties did not register useremail and user_id fields.');
     }
+    $renderBuilder = $container->get('form.factory')->createNamedBuilder(
+        'formaction_properties',
+        MauticPlugin\DOIConfirmBundle\Form\Type\EmailSendType::class,
+        [
+            'email' => 19,
+            'post_url' => 'https://www.show-master.ru',
+            'send_owner_email' => false,
+            'owner_email' => [],
+        ],
+        array_merge(['with_email_types' => false, 'csrf_protection' => false], $doiAction['formTypeOptions'] ?? [])
+    );
+    $renderBuilder->remove('email')->add('email', Symfony\Component\Form\Extension\Core\Type\ChoiceType::class, [
+        'choices' => ['DOI confirmation' => 19],
+    ]);
+    foreach ([
+        'add_campaign_doi_success_tags',
+        'remove_tags_doi_success_tags',
+        'add_campaign_doi_success_lists',
+        'remove_campaign_doi_success_lists',
+    ] as $databaseBackedField) {
+        $renderBuilder->remove($databaseBackedField)->add(
+            $databaseBackedField,
+            Symfony\Component\Form\Extension\Core\Type\TextType::class,
+            ['required' => false]
+        );
+    }
+    $ownerRenderBuilder = $renderBuilder->get('owner_email');
+    $ownerUserEmailBuilder = $ownerRenderBuilder->get('useremail');
+    $ownerUserEmailBuilder->remove('email')->add(
+        'email',
+        Symfony\Component\Form\Extension\Core\Type\ChoiceType::class,
+        ['choices' => ['Owner notification' => 20], 'required' => false]
+    );
+    $ownerRenderBuilder->remove('user_id')->add(
+        'user_id',
+        Symfony\Component\Form\Extension\Core\Type\ChoiceType::class,
+        ['choices' => ['Owner' => 1], 'multiple' => true, 'required' => false]
+    );
+    $propertiesForm = $renderBuilder->getForm();
+    $propertiesView = $propertiesForm->createView();
+    $twig = $container->get('twig');
+    $twig->getRuntime(Symfony\Component\Form\FormRenderer::class)->setTheme(
+        $propertiesView,
+        [$doiAction['formTheme']]
+    );
+    $renderedProperties = $twig->createTemplate('{{ form_row(form) }}')->render(['form' => $propertiesView]);
+    $nativeLayoutCount = substr_count($renderedProperties, 'mb-lg d-flex');
+    if (2 !== $nativeLayoutCount) {
+        throw new RuntimeException(sprintf('Primary and owner email controls did not use the same native Mautic email-send-list layout (%d blocks rendered).', $nativeLayoutCount));
+    }
+    if (!str_contains($renderedProperties, 'id="formaction_properties_owner_email_container"')
+        || !str_contains($renderedProperties, 'data-show-on=\'{"formaction_properties_send_owner_email":"checked"}\'')
+        || !preg_match('/id="formaction_properties_owner_email_container"[^>]*hidden[^>]*style="display:none"/', $renderedProperties)
+    ) {
+        throw new RuntimeException('Unchecked owner email settings were not rendered hidden and bound to the checkbox.');
+    }
+    if (!str_contains($renderedProperties, "document.getElementById(&#039;formaction_properties_owner_email_container&#039;)")) {
+        throw new RuntimeException('Owner email checkbox did not receive its direct visibility toggle.');
+    }
     echo 'OWNER_EMAIL_FIELDS useremail,user_id'.PHP_EOL;
+    echo 'OWNER_EMAIL_LAYOUT native-shared hidden-when-unchecked'.PHP_EOL;
     echo 'PASS '.$bundle.' Mautic '.$kernel->getVersion().' PHP '.PHP_VERSION.PHP_EOL;
 } catch (Throwable $exception) {
     fwrite(STDERR, get_class($exception).': '.$exception->getMessage().PHP_EOL);

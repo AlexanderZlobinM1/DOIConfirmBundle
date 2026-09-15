@@ -1,5 +1,8 @@
 # CHANGELOG
 
+- 2.1.3: Primary and owner email controls now use the same native Mautic
+  email-send-list layout; unchecked owner settings are rendered and toggled as
+  one hidden compound form row.
 - 2.1.2: Primary DOI confirmation email fields are now built by Mautic's native
   EmailSendType; unchecked owner fields render hidden server-side.
 - 2.1.1: Primary DOI and owner email fields now reuse Mautic's native email

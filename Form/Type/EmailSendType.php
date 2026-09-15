@@ -182,6 +182,9 @@ class EmailSendType extends AbstractType
                     'label'    => 'jw.mautic.email.form.action.sendemail.owner.after_doi',
                     'required' => false,
                     'data'     => !empty($options['data']['send_owner_email']),
+                    'attr'     => [
+                        'onchange' => "var fields=document.getElementById('formaction_properties_owner_email_container');if(fields){fields.hidden=!this.checked;fields.classList.toggle('hide',!this.checked);fields.style.display=this.checked?'':'none';}",
+                    ],
                 ]
             );
 
@@ -217,6 +220,6 @@ class EmailSendType extends AbstractType
      */
     public function getBlockPrefix(): string
     {
-        return 'jw.mautic.form.type.jw_emailsend_list';
+        return 'jw_mautic_form_type_jw_emailsend_list';
     }
 }

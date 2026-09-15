@@ -154,3 +154,12 @@ than by plugin-copied field definitions, so button classes, icons, disabled
 state and version-specific attributes come from the installed Mautic version.
 The unchecked owner-email wrapper is also rendered hidden server-side with
 `hide`, `hidden` and `display:none`, then toggled by the checkbox fallback.
+
+## Patch note for 2.1.3
+
+2.1.3 corrects the remaining form-theme mismatch: both the primary DOI email
+and nested owner email now render through the same native Mautic
+`emailsend_list_row` block. The owner configuration is rendered as one compound
+form row, starts hidden when `send_owner_email` is unchecked and is toggled by
+an event handler attached directly to the checkbox. This avoids relying on an
+inline script element inside Mautic's AJAX-loaded action editor.

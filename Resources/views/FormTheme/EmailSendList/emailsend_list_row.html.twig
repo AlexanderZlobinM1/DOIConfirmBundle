@@ -1,59 +1,29 @@
 {% use '@MauticEmail/FormTheme/EmailSendList/emailsend_list_row.html.twig' with emailsend_list_row as mautic_emailsend_list_row %}
-{% use '@MauticEmail/FormTheme/FormAction/_formaction_properties_useremail_row.html.twig' with _formaction_properties_useremail_row as mautic_formaction_useremail_row %}
 
 {% block _formaction_properties_owner_email_useremail_row %}
-    {{ block('mautic_formaction_useremail_row') }}
+    {{ block('mautic_emailsend_list_row') }}
+{% endblock %}
+
+{% block jw_doi_owner_email_row %}
+    {% set ownerToggle = form.parent.children.send_owner_email %}
+    {% set ownerEnabled = ownerToggle.vars.checked|default(false) %}
+    <div
+        id="{{ id }}_container"
+        class="col-xs-12 doi-owner-email-fields{% if not ownerEnabled %} hide{% endif %}"
+        data-show-on='{"{{ ownerToggle.vars.id }}":"checked"}'
+        {% if not ownerEnabled %}hidden style="display:none"{% endif %}
+    >
+        {{ form_row(form.useremail) }}
+        {{ form_row(form.user_id) }}
+    </div>
 {% endblock %}
 
 {% block jw_mautic_form_type_jw_emailsend_list_row %}
 {{ block('mautic_emailsend_list_row') }}
 
 {% if form.send_owner_email is defined and form.owner_email is defined %}
-    {% set ownerEmailChecked = form.send_owner_email.vars.checked|default(false) %}
     {{ form_row(form.send_owner_email) }}
-    <div
-        id="{{ form.owner_email.vars.id }}_container"
-        class="col-xs-12 doi-owner-email-fields{% if not ownerEmailChecked %} hide{% endif %}"
-        data-show-on='{"{{ form.send_owner_email.vars.id }}":"checked"}'
-        {% if not ownerEmailChecked %}hidden style="display:none"{% endif %}
-    >
-        {{ form_row(form.owner_email.useremail) }}
-        {{ form_row(form.owner_email.user_id) }}
-    </div>
-    {% do form.owner_email.setRendered() %}
-    <script>
-        (function () {
-            var fields = document.getElementById('{{ (form.owner_email.vars.id ~ '_container')|e('js') }}');
-            var checkbox = document.getElementById('{{ form.send_owner_email.vars.id|e('js') }}');
-            var root = fields && (fields.closest('form') || document);
-
-            if (!checkbox && root) {
-                checkbox = root.querySelector('[name$="[send_owner_email]"]');
-            }
-
-            function toggleOwnerEmailFields() {
-                if (!checkbox || !fields) {
-                    return;
-                }
-
-                if (checkbox.checked) {
-                    fields.hidden = false;
-                    fields.classList.remove('hide');
-                    fields.style.display = '';
-                } else {
-                    fields.hidden = true;
-                    fields.classList.add('hide');
-                    fields.style.display = 'none';
-                }
-            }
-
-            if (checkbox) {
-                checkbox.addEventListener('change', toggleOwnerEmailFields);
-            }
-
-            toggleOwnerEmailFields();
-        }());
-    </script>
+    {{ form_row(form.owner_email) }}
 {% endif %}
 
 {{ form_rest(form) }}

@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.1.3 - 2026-09-15
+
+- Render the primary DOI email and optional owner email with the same native
+  Mautic `emailsend_list_row` block, preserving each installed Mautic version's
+  horizontal selector/button layout.
+- Render the owner settings as one compound form row, hidden server-side while
+  unchecked, and toggle that exact row directly from the checkbox without
+  relying on execution of an injected script block.
+- Add runtime HTML assertions for shared native layout and unchecked visibility.
+
 ## 2.1.2 - 2026-09-15
 
 - Build the primary DOI confirmation email selector/buttons with Mautic's
