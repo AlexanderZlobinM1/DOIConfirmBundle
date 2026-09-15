@@ -257,6 +257,23 @@ try {
     $propertiesForm = $renderBuilder->getForm();
     $propertiesView = $propertiesForm->createView();
     $twig = $container->get('twig');
+    foreach (['en_US', 'de_DE', 'ru', 'sr_RS'] as $documentationLocale) {
+        $documentationTemplate = sprintf('@DOIConfirm/Documentation/%s.html.twig', $documentationLocale);
+        if (!$twig->getLoader()->exists($documentationTemplate)) {
+            throw new RuntimeException(sprintf('DOI documentation template %s was not found.', $documentationTemplate));
+        }
+        $twig->load($documentationTemplate);
+    }
+    foreach ([
+        '@DOIConfirm/Documentation/index.html.twig',
+        '@DOIConfirm/Integration/form.html.twig',
+    ] as $documentationShell) {
+        if (!$twig->getLoader()->exists($documentationShell)) {
+            throw new RuntimeException(sprintf('DOI documentation shell %s was not found.', $documentationShell));
+        }
+        $twig->load($documentationShell);
+    }
+    echo 'DOCUMENTATION en_US,de_DE,ru,ru_RU,sr_RS admin-only'.PHP_EOL;
     $twig->getRuntime(Symfony\Component\Form\FormRenderer::class)->setTheme(
         $propertiesView,
         [$doiAction['formTheme']]

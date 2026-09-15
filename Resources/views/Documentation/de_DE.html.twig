@@ -1,0 +1,120 @@
+<header class="doi-docs__intro">
+    <h1>DOI Confirm Bundle</h1>
+    <p class="doi-docs__lead">Sichere E-Mail-Bestätigung, Kontaktfeld-Updates und nachvollziehbare Einwilligungsnachweise für Formulare, die Kontakte selbst ausfüllen.</p>
+    <div class="doi-docs__callout">Ein DOI-Klick weist den Zugriff auf das Postfach nach, nicht die bürgerliche Identität. Bewahren Sie sowohl das Absenden des Formulars als auch die Bestätigung auf.</div>
+</header>
+
+<nav class="doi-docs__nav" aria-label="Dokumentationsabschnitte">
+    <a href="#doi-doc-overview">Sicheres DOI-Modell</a>
+    <a href="#doi-doc-fields">Empfohlene Felder</a>
+    <a href="#doi-doc-candidate">Unbestätigte E-Mail</a>
+    <a href="#doi-doc-scenarios">Konfigurationsbeispiele</a>
+    <a href="#doi-doc-tokens">Tokens und Syntax</a>
+    <a href="#doi-doc-evidence">Einwilligungsnachweis</a>
+    <a href="#doi-doc-limitations">Einschränkungen</a>
+    <a href="#doi-doc-checklist">Test-Checkliste</a>
+</nav>
+
+<section class="doi-docs__section" id="doi-doc-overview">
+    <h2>Sicheres DOI-Modell</h2>
+    <ol>
+        <li>Die Person füllt das Formular selbst aus und aktiviert eine nicht vorausgewählte Einwilligungs-Checkbox.</li>
+        <li>Das Formular erfasst den konkreten Zweck und die Version des angezeigten Einwilligungstextes.</li>
+        <li>Das Plugin sendet die Nachricht mit dem Bestätigungslink <code>{doi_url}</code>.</li>
+        <li>Die Person öffnet den Link aus ihrem Postfach.</li>
+        <li>Erst dann werden bestätigte Tags, Segmente, Feldänderungen und optional die Benachrichtigung an den Verantwortlichen ausgeführt.</li>
+    </ol>
+    <div class="doi-docs__callout doi-docs__warning">Für voneinander unabhängige Zwecke sind getrennte Einwilligungen und Nachweise erforderlich. Eine Newsletter-Bestätigung darf keinen anderen Zweck freigeben.</div>
+</section>
+
+<section class="doi-docs__section" id="doi-doc-fields">
+    <h2>Empfohlene Kontaktfelder</h2>
+    <div class="doi-docs__table-wrap"><table>
+        <thead><tr><th>Beispiel-Alias</th><th>Typ</th><th>Zweck</th></tr></thead>
+        <tbody>
+            <tr><td><code>email_validate</code></td><td>E-Mail oder Text</td><td>Noch nicht bestätigte Kandidatenadresse</td></tr>
+            <tr><td><code>optin_status</code></td><td>Auswahl oder Text</td><td><code>Pending</code>, <code>Confirmed</code> oder <code>Withdrawn</code></td></tr>
+            <tr><td><code>doi_requested_at</code></td><td>Text</td><td>Zeitpunkt des DOI-Starts durch das Formular</td></tr>
+            <tr><td><code>doi_confirmed_at</code></td><td>Text</td><td>Zeitpunkt der verarbeiteten Bestätigung</td></tr>
+            <tr><td><code>doi_confirmed_ip</code></td><td>Text</td><td>Optionale IP des Bestätigungsrequests, sofern zulässig</td></tr>
+            <tr><td><code>doi_proof_id</code></td><td>Text</td><td>Zufällige Korrelations-ID</td></tr>
+            <tr><td><code>doi_source</code></td><td>Text</td><td>Formular, Kampagne oder Einwilligungszweck</td></tr>
+            <tr><td><code>consent_text_version</code></td><td>Text</td><td>Version des angezeigten Hinweises und Einwilligungstextes</td></tr>
+        </tbody>
+    </table></div>
+    <p><code>{doi_timestamp}</code> verwendet <code>TT.MM.JJJJ HH:MM:SS</code> in der Server-Zeitzone. Ein Textfeld erhält den Wert unverändert. Für stärkere Nachweise sollte zusätzlich UTC mit Zeitzone in einem externen Append-only-Ereignisspeicher stehen.</p>
+</section>
+
+<section class="doi-docs__section" id="doi-doc-candidate">
+    <h2>Unbestätigte Adresse nicht in <code>email</code> speichern</h2>
+    <p>Schreibt das Formular sofort in das Standardfeld <code>email</code>, können Mautic-Kampagnen, Segmente, Benachrichtigungen oder manuelle Sendungen die Adresse vor der Bestätigung verwenden. Ein Tippfehler kann Aktivität einer fremden Adresse zuordnen.</p>
+    <ol>
+        <li>Erstellen Sie das benutzerdefinierte Kontaktfeld <code>email_validate</code>.</li>
+        <li>Ordnen Sie das E-Mail-Eingabefeld diesem Feld statt <code>email</code> zu.</li>
+        <li>Tragen Sie unter <strong>Lead field alias for email (optional)</strong> <code>email_validate</code> ein.</li>
+        <li>Kopieren Sie erst nach DOI mit <code>email={email_validate}</code> in das Standardfeld.</li>
+    </ol>
+    <div class="doi-docs__callout">Vor der Bestätigung besitzt der normale Mautic-Versand keine Standard-Empfängeradresse. Nur die DOI-Aktion verwendet bewusst das Kandidatenfeld als Fallback.</div>
+    <div class="doi-docs__callout doi-docs__warning">Eigener Code, der <code>email_validate</code> ausdrücklich nutzt, kann weiterhin senden. Beschränken Sie das Feld auf den DOI-Prozess.</div>
+</section>
+
+<section class="doi-docs__section" id="doi-doc-scenarios">
+    <h2>Konfigurationsbeispiele</h2>
+    <div class="doi-docs__grid">
+        <article class="doi-docs__card"><h3>Vor der DOI-E-Mail</h3><pre><code>optin_status=Pending,doi_requested_at={doi_timestamp},doi_source=registration_form,consent_text_version=2026-09</code></pre><p>Erfasst die Anfrage, ohne sie als bestätigte Einwilligung darzustellen.</p></article>
+        <article class="doi-docs__card"><h3>Nach der Bestätigung</h3><pre><code>email={email_validate},optin_status=Confirmed,doi_confirmed_at={doi_timestamp},doi_confirmed_ip={doi_ip},doi_proof_id={tokenid}</code></pre><p>Übernimmt die Kandidatenadresse und speichert den Bestätigungsstatus.</p></article>
+        <article class="doi-docs__card"><h3>Newsletter-Zweck</h3><pre><code>newsletter_status=Confirmed,newsletter_confirmed_at={doi_timestamp},newsletter_proof_id={tokenid},doi_source=newsletter_footer</code></pre><p>Hält andere Zwecke wie Veranstaltungen getrennt.</p></article>
+    </div>
+    <p>Remove-after-success-Tags und -Segmente bilden den Pending-Status: Das Plugin fügt sie beim DOI-Start hinzu und entfernt sie bei Bestätigung. Add-after-success bildet den bestätigten Status.</p>
+</section>
+
+<section class="doi-docs__section" id="doi-doc-tokens">
+    <h2>Tokens und Feld-Update-Syntax</h2>
+    <p>Verwenden Sie kommagetrennte Zuweisungen <code>alias=value</code> in einer Zeile. Keine Leerzeichen um Alias oder <code>=</code>. Werte mit Komma oder <code>=</code> werden nicht unterstützt; eine leere Zuweisung löscht kein Feld.</p>
+    <div class="doi-docs__table-wrap"><table>
+        <thead><tr><th>Token</th><th>Wert</th><th>Einsatz</th></tr></thead>
+        <tbody>
+            <tr><td><code>{doi_timestamp}</code></td><td>Ausführungszeit in Server-Zeitzone</td><td>Vor DOI für Anfragezeit, danach für Bestätigungszeit</td></tr>
+            <tr><td><code>{doi_ip}</code></td><td>IP des Bestätigungsrequests</td><td>Nach erfolgreichem DOI</td></tr>
+            <tr><td><code>{tokenid}</code></td><td>Neuer zufälliger Hexadezimalwert</td><td>Ein Nachweisfeld nach DOI</td></tr>
+            <tr><td><code>{feld_alias}</code></td><td>Aktueller Wert des Kontaktfeldes</td><td>Als vollständiger Wert, z. B. <code>email={email_validate}</code></td></tr>
+        </tbody>
+    </table></div>
+    <p>Jede Zuweisung mit <code>{tokenid}</code> erzeugt einen eigenen Wert. Speichern Sie ihn einmal, wenn eine stabile Korrelations-ID benötigt wird. Unbekannte Aliase werden nicht garantiert sicher ignoriert.</p>
+    <h3>Tokens nur für die DOI-E-Mail</h3>
+    <p><code>{doi_url}</code> ist der erforderliche sichtbare Bestätigungslink. <code>{doi_nothuman}</code> ist eine optionale Scanner-Falle und darf nicht als sichtbarer Link dienen. Beide sind keine Feld-Update-Tokens.</p>
+</section>
+
+<section class="doi-docs__section" id="doi-doc-evidence">
+    <h2>Einwilligungsnachweis</h2>
+    <p>Ein belastbarer Nachweis dokumentiert, wer handelte, welchem Zweck und welchem exakten Text zugestimmt wurde, wann das Formular gesendet und der Postfach-Link bestätigt wurde sowie wie ein Widerruf erfasst wird. Bewahren Sie den Plugin-Audit-Eintrag mit <code>bundle=lead</code>, <code>object=doi</code>, <code>action=confirm_doi</code> und erforderliche Webhook- oder externe Archive auf.</p>
+    <ul>
+        <li>Speichern Sie eine unveränderliche Kopie oder einen Hash der Einwilligungs-/Datenschutzhinweis-Version.</li>
+        <li>Nutzen Sie ein geschütztes Append-only-Protokoll, Zugriffskontrolle, Backups und eine genehmigte Aufbewahrungsfrist.</li>
+        <li>Erfassen Sie den Widerruf als eigenes Ereignis, statt die Historie nur mit dem neuesten Status zu überschreiben.</li>
+        <li>Speichern Sie IP/User-Agent nur bei dokumentierter Erforderlichkeit; es sind personenbezogene Daten.</li>
+    </ul>
+    <div class="doi-docs__callout doi-docs__danger">Bearbeitbare Kontaktfelder sind ein operativer Überblick, aber allein kein unveränderlicher Nachweis. DOI belegt Postfachzugriff, nicht die rechtliche Identität. Zwecke, Texte und Fristen müssen DSB oder Rechtsberatung für die jeweilige Rechtsordnung freigeben.</div>
+</section>
+
+<section class="doi-docs__section" id="doi-doc-limitations">
+    <h2>Wichtige Einschränkungen</h2>
+    <ul>
+        <li>Das Alternativfeld wird nur bei leerem Standardfeld <code>email</code> verwendet. Besteht bereits eine Adresse, geht die DOI-Nachricht dorthin.</li>
+        <li>Der Fallback bestätigt keine neue Adresse, solange die alte primäre Adresse erhalten bleibt. Dafür ist ein eigener getesteter Änderungsprozess nötig.</li>
+        <li>Ein bis zur Bestätigung leeres <code>email</code> kann Identifikation und Deduplizierung beeinflussen. Testen Sie neue, wiederkehrende und parallele Einsendungen.</li>
+        <li><code>{tokenid}</code> ist keine Signatur, Zeitstempelstelle oder alleiniger Rechtsnachweis.</li>
+    </ul>
+</section>
+
+<section class="doi-docs__section" id="doi-doc-checklist">
+    <h2>Test-Checkliste</h2>
+    <ol>
+        <li>Neue Adresse senden und prüfen, dass nur <code>email_validate</code> gefüllt ist.</li>
+        <li>Vor dem Klick darf nur die DOI-E-Mail versendet werden.</li>
+        <li><code>{doi_url}</code> öffnen und Übernahme in <code>email</code>, Status, Nachweisfelder, Tags und Segmente prüfen.</li>
+        <li>Eine aktivierte Verantwortlichen-Mail darf erst nach Bestätigung gesendet werden.</li>
+        <li>Tippfehler, Wiederholung, bestehenden Kontakt, Scanner-Abbruch und verzögerten Messenger testen.</li>
+        <li>Audit-/Webhook-Aufbewahrung und Widerrufsprozess prüfen.</li>
+    </ol>
+</section>

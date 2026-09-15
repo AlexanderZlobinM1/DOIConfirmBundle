@@ -1,6 +1,7 @@
 <?php
 
 use Mautic\CoreBundle\Helper\AppVersion;
+use MauticPlugin\DOIConfirmBundle\Controller\DocumentationController;
 
 $mauticVersion = (int) (new AppVersion())->getVersion();
 
@@ -38,7 +39,7 @@ $defaultIntegrationArguments = array_merge(
 return [
     'name'        => 'DOI Confirm Bundle',
     'description' => 'Adds a robust and flexible way to add a double-opt-in process (DOI) to any form in Mautic.',
-    'version'     => '2.1.7',
+    'version'     => '3.0.0',
     'author'      => 'Alexander Zlobin',
     'services' => [
         'events' => [
@@ -117,6 +118,13 @@ return [
         ],
     ],
     'routes' => [
+        'main' => [
+            'doiconfirm_documentation' => [
+                'path'       => '/doi-confirm/documentation',
+                'controller' => DocumentationController::class.'::indexAction',
+                'method'     => ['GET'],
+            ],
+        ],
         'public' => [
             'doiconfirm_doiauth_index' => [
                 'path'       => '/doi/{enc}',

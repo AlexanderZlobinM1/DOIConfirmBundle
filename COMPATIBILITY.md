@@ -8,6 +8,13 @@ Run against each supported Mautic installation with this plugin installed:
 MAUTIC_ROOT=/path/to/mautic php -d memory_limit=1G Tests/runtime-compatibility.php
 ```
 
+Run the DB-free localized documentation and catalog checks with:
+
+```sh
+php Tests/documentation.php
+php Tests/translation-catalogs.php
+```
+
 The test compiles an isolated container, instantiates this plugin’s integrations
 and form types, then removes its temporary cache. Production cache and provider
 settings are not changed. Live external-provider delivery requires a separate
@@ -199,3 +206,14 @@ question icons expose hover tooltips that distinguish the immediate DOI request
 sent to the contact from the owner notification sent only after successful
 confirmation. The tooltips also document the `{doi_url}` requirement and the
 selected Mautic user recipients.
+
+## Major note for 3.0.0
+
+3.0.0 adds an admin-only `/doi-confirm/documentation` page and links it from
+the native Doi Report integration settings. The page follows the active Mautic
+locale with English fallback: `en_US`, `de_DE`, Russian `ru`/`ru_RU`, and
+`sr_RS`. It documents safe candidate-email storage, promotion only after DOI,
+field-update and email tokens, parser limits, multiple-purpose examples,
+recommended evidence fields, immutable audit retention and a validation
+checklist. This documentation feature does not change DOI runtime semantics,
+public confirmation routes, storage schema or existing form-action keys.

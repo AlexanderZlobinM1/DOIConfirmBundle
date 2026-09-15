@@ -38,6 +38,29 @@ $integration = (new ReflectionClass(MauticPlugin\DOIConfirmBundle\Integration\Do
 if ('DoiReport' !== $integration->getName()) {
     throw new RuntimeException('DoiReport integration object name mismatch.');
 }
+if ('@DOIConfirm/Integration/form.html.twig' !== $integration->getFormTemplate()) {
+    throw new RuntimeException('DoiReport integration must expose the built-in documentation link template.');
+}
+$documentationRoute = $config['routes']['main']['doiconfirm_documentation'] ?? null;
+if (!is_array($documentationRoute)
+    || '/doi-confirm/documentation' !== ($documentationRoute['path'] ?? null)
+    || ['GET'] !== ($documentationRoute['method'] ?? null)
+) {
+    throw new RuntimeException('Admin-only DOI documentation route is not registered correctly.');
+}
+
+$localeResolver = new MauticPlugin\DOIConfirmBundle\Service\DocumentationLocaleResolver();
+foreach ([
+    'en_US' => 'en_US',
+    'de-DE' => 'de_DE',
+    'ru_RU' => 'ru',
+    'sr-Latn-RS' => 'sr_RS',
+    'fr_FR' => 'en_US',
+] as $activeLocale => $documentationLocale) {
+    if ($documentationLocale !== $localeResolver->resolve($activeLocale)) {
+        throw new RuntimeException(sprintf('Documentation locale resolution failed for %s.', $activeLocale));
+    }
+}
 
 final class DoiTestRepository
 {

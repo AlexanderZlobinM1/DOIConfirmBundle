@@ -1,0 +1,120 @@
+<header class="doi-docs__intro">
+    <h1>DOI Confirm Bundle</h1>
+    <p class="doi-docs__lead">Safe email confirmation, contact-field updates and practical consent evidence for forms completed by the contacts themselves.</p>
+    <div class="doi-docs__callout">A DOI click demonstrates access to the mailbox. It does not prove the person's civil identity. Preserve both the form submission and the confirmation event.</div>
+</header>
+
+<nav class="doi-docs__nav" aria-label="Documentation sections">
+    <a href="#doi-doc-overview">Safe DOI model</a>
+    <a href="#doi-doc-fields">Recommended fields</a>
+    <a href="#doi-doc-candidate">Unconfirmed email</a>
+    <a href="#doi-doc-scenarios">Configuration examples</a>
+    <a href="#doi-doc-tokens">Tokens and syntax</a>
+    <a href="#doi-doc-evidence">Consent evidence</a>
+    <a href="#doi-doc-limitations">Limitations</a>
+    <a href="#doi-doc-checklist">Test checklist</a>
+</nav>
+
+<section class="doi-docs__section" id="doi-doc-overview">
+    <h2>Safe DOI model</h2>
+    <ol>
+        <li>The contact completes the form and actively selects a consent checkbox that is not preselected.</li>
+        <li>The form records the exact consent purpose and the version of the text shown.</li>
+        <li>The plugin sends a message containing the human confirmation link <code>{doi_url}</code>.</li>
+        <li>The contact opens that link from the mailbox.</li>
+        <li>Only then does the plugin apply confirmed tags, segments and field updates and optionally notify an owner.</li>
+    </ol>
+    <div class="doi-docs__callout doi-docs__warning">Use separate consent controls and records for unrelated purposes. One newsletter confirmation must not silently authorize another purpose.</div>
+</section>
+
+<section class="doi-docs__section" id="doi-doc-fields">
+    <h2>Recommended contact fields</h2>
+    <div class="doi-docs__table-wrap"><table>
+        <thead><tr><th>Example alias</th><th>Type</th><th>Purpose</th></tr></thead>
+        <tbody>
+            <tr><td><code>email_validate</code></td><td>Email or text</td><td>Candidate address awaiting confirmation</td></tr>
+            <tr><td><code>optin_status</code></td><td>Select or text</td><td><code>Pending</code>, <code>Confirmed</code> or <code>Withdrawn</code></td></tr>
+            <tr><td><code>doi_requested_at</code></td><td>Text</td><td>Time at which the form started DOI</td></tr>
+            <tr><td><code>doi_confirmed_at</code></td><td>Text</td><td>Time at which the confirmation link was processed</td></tr>
+            <tr><td><code>doi_confirmed_ip</code></td><td>Text</td><td>Optional confirmation-request IP, if policy permits collection</td></tr>
+            <tr><td><code>doi_proof_id</code></td><td>Text</td><td>Random correlation identifier</td></tr>
+            <tr><td><code>doi_source</code></td><td>Text</td><td>Form, campaign or consent-purpose identifier</td></tr>
+            <tr><td><code>consent_text_version</code></td><td>Text</td><td>Version of the notice and consent wording displayed</td></tr>
+        </tbody>
+    </table></div>
+    <p><code>{doi_timestamp}</code> uses <code>DD.MM.YYYY HH:MM:SS</code> in the server timezone. A text field preserves it exactly. For stronger evidence, additionally write UTC time with timezone to an external append-only event store.</p>
+</section>
+
+<section class="doi-docs__section" id="doi-doc-candidate">
+    <h2>Keep an unconfirmed address out of <code>email</code></h2>
+    <p>If the form writes directly to Mautic's standard <code>email</code>, campaigns, segments, notifications or a manual send may use it before confirmation. A typo can also associate activity with an address controlled by somebody else.</p>
+    <ol>
+        <li>Create a custom contact field with alias <code>email_validate</code>.</li>
+        <li>Map the public form's email input to that field instead of <code>email</code>.</li>
+        <li>Set <strong>Lead field alias for email (optional)</strong> to <code>email_validate</code>.</li>
+        <li>Promote it only in <strong>Update contact fields after successful DOI</strong> with <code>email={email_validate}</code>.</li>
+    </ol>
+    <div class="doi-docs__callout">Before confirmation, ordinary Mautic email delivery has no standard recipient address. The DOI action intentionally uses the candidate field as a fallback.</div>
+    <div class="doi-docs__callout doi-docs__warning">Custom code or automation that explicitly reads <code>email_validate</code> can still send to it. Restrict that field to the DOI workflow.</div>
+</section>
+
+<section class="doi-docs__section" id="doi-doc-scenarios">
+    <h2>Configuration examples</h2>
+    <div class="doi-docs__grid">
+        <article class="doi-docs__card"><h3>Before the DOI email</h3><pre><code>optin_status=Pending,doi_requested_at={doi_timestamp},doi_source=registration_form,consent_text_version=2026-09</code></pre><p>Records the request without marking consent as confirmed.</p></article>
+        <article class="doi-docs__card"><h3>After confirmation</h3><pre><code>email={email_validate},optin_status=Confirmed,doi_confirmed_at={doi_timestamp},doi_confirmed_ip={doi_ip},doi_proof_id={tokenid}</code></pre><p>Promotes the candidate and records the confirmation snapshot.</p></article>
+        <article class="doi-docs__card"><h3>Newsletter-specific consent</h3><pre><code>newsletter_status=Confirmed,newsletter_confirmed_at={doi_timestamp},newsletter_proof_id={tokenid},doi_source=newsletter_footer</code></pre><p>Keeps an unrelated event or product consent separate.</p></article>
+    </div>
+    <p>The remove-after-success tags and segments act as the pending state: the plugin adds them when DOI starts and removes them after confirmation. Add-after-success selections represent the confirmed state.</p>
+</section>
+
+<section class="doi-docs__section" id="doi-doc-tokens">
+    <h2>Tokens and field-update syntax</h2>
+    <p>Use comma-separated <code>alias=value</code> assignments on one line. Do not place spaces around aliases or <code>=</code>. Values containing a comma or <code>=</code> are not supported, and an empty assignment cannot clear a field.</p>
+    <div class="doi-docs__table-wrap"><table>
+        <thead><tr><th>Token</th><th>Value</th><th>Use</th></tr></thead>
+        <tbody>
+            <tr><td><code>{doi_timestamp}</code></td><td>Execution time in server timezone</td><td>Before for request time; after for confirmation time</td></tr>
+            <tr><td><code>{doi_ip}</code></td><td>Confirmation-request IP</td><td>After successful DOI</td></tr>
+            <tr><td><code>{tokenid}</code></td><td>New random hexadecimal value</td><td>One proof/correlation field after DOI</td></tr>
+            <tr><td><code>{field_alias}</code></td><td>Current value of that contact field</td><td>Complete assignment value, for example <code>email={email_validate}</code></td></tr>
+        </tbody>
+    </table></div>
+    <p>Every assignment containing <code>{tokenid}</code> generates a different value. Store it once if one stable correlation ID is required. An unknown field alias is not guaranteed to be ignored safely.</p>
+    <h3>Email-only tokens</h3>
+    <p><code>{doi_url}</code> is the required visible confirmation link. <code>{doi_nothuman}</code> is an optional scanner trap and must never be the visible confirmation link. These are not field-update tokens.</p>
+</section>
+
+<section class="doi-docs__section" id="doi-doc-evidence">
+    <h2>Consent evidence</h2>
+    <p>For a defensible record, preserve who acted, what exact purpose and wording were presented, when the form was submitted, when the mailbox link was confirmed and how withdrawal is recorded. Keep the plugin audit entry with <code>bundle=lead</code>, <code>object=doi</code>, <code>action=confirm_doi</code>, plus any required webhook or external archive.</p>
+    <ul>
+        <li>Store a copy or immutable hash of the consent text/privacy notice version.</li>
+        <li>Use an append-only protected log with access control, backup and an approved retention period.</li>
+        <li>Record withdrawal separately; do not overwrite history with only the latest status.</li>
+        <li>Collect IP/User-Agent only when necessary and documented. They are personal data, not mandatory proof in every case.</li>
+    </ul>
+    <div class="doi-docs__callout doi-docs__danger">Editable contact fields are a convenient operational snapshot, not sufficient immutable evidence by themselves. DOI proves mailbox access, not legal identity. Have the controller's DPO or counsel approve purposes, wording and retention for the applicable jurisdiction.</div>
+</section>
+
+<section class="doi-docs__section" id="doi-doc-limitations">
+    <h2>Important limitations</h2>
+    <ul>
+        <li>The alternative field is used only when standard <code>email</code> is empty. If an existing contact has an email, the DOI message goes there and the candidate is ignored.</li>
+        <li>This fallback does not verify a replacement address while retaining an old primary address. Design and test address changes separately.</li>
+        <li>Keeping <code>email</code> empty until confirmation may affect Mautic identification and deduplication. Test fresh, returning and concurrent submissions.</li>
+        <li><code>{tokenid}</code> is a random identifier, not a signature, timestamp authority or legal proof on its own.</li>
+    </ul>
+</section>
+
+<section class="doi-docs__section" id="doi-doc-checklist">
+    <h2>Test checklist</h2>
+    <ol>
+        <li>Submit a fresh address and confirm that only <code>email_validate</code> is populated.</li>
+        <li>Confirm that only the DOI email is sent before the click.</li>
+        <li>Open <code>{doi_url}</code> and verify email promotion, status, evidence fields, tags and segments.</li>
+        <li>Verify that an enabled owner message is sent only after confirmation.</li>
+        <li>Test typos, repeat submissions, existing contacts, scanner cancellation and delayed Messenger processing.</li>
+        <li>Verify audit/webhook retention and a consent-withdrawal workflow.</li>
+    </ol>
+</section>

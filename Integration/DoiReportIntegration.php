@@ -42,4 +42,9 @@ class DoiReportIntegration extends AbstractIntegration
     {
         return 'plugins/DOIConfirmBundle/Assets/img/icon.png';
     }
+
+    public function getFormTemplate(): string
+    {
+        return '@DOIConfirm/Integration/form.html.twig';
+    }
 }

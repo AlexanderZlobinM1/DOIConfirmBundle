@@ -1,5 +1,19 @@
 # Changelog
 
+## 3.0.0 - 2026-09-15
+
+- Add admin-only built-in HTML documentation linked from the Doi Report plugin
+  settings, following the established Advanced Permissions documentation
+  layout and the active Mautic locale.
+- Provide complete English, German, Russian (`ru` and `ru_RU`) and Serbian
+  guidance for candidate-email isolation, safe post-confirmation promotion,
+  all field/email tokens, parser limitations and test scenarios.
+- Document recommended operational evidence fields, consent-text versioning,
+  immutable audit retention, withdrawal history and privacy limitations without
+  presenting editable contact fields or DOI as standalone legal proof.
+- Add regression coverage for the admin route, integration link, locale
+  resolution, localized content completeness and Twig template discovery.
+
 ## 2.1.7 - 2026-09-15
 
 - Add distinct purpose headings above the primary DOI confirmation email and

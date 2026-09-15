@@ -50,7 +50,12 @@ This version targets:
 - Mautic 5.x / 6.x / 7.x
 - PHP 8.1 - 8.4 (depending on your Mautic version requirements)
 
-Русская документация для операторов Mautic 7.1.3: [docs/ru/doi-confirmbundle-operator-guide.md](docs/ru/doi-confirmbundle-operator-guide.md).
+The Doi Report plugin card contains built-in HTML documentation in English,
+German, Russian and Serbian. It follows the active Mautic locale (`ru` and
+`ru_RU` share the complete Russian page) and covers safe candidate-email
+storage, field tokens, configuration examples, consent evidence and testing.
+
+Русская документация для операторов: [docs/ru/doi-confirmbundle-operator-guide.md](docs/ru/doi-confirmbundle-operator-guide.md).
 
 1. Donwload the ZIP file
 2. Extract it to a local directory

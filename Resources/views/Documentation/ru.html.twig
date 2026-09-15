@@ -1,0 +1,120 @@
+<header class="doi-docs__intro">
+    <h1>DOI Confirm Bundle</h1>
+    <p class="doi-docs__lead">Безопасное подтверждение email, обновление полей контакта и практическая фиксация согласия для форм, которые люди заполняют самостоятельно.</p>
+    <div class="doi-docs__callout">DOI-клик подтверждает доступ к почтовому ящику, но не удостоверяет гражданскую личность человека. Сохраняйте и отправку формы, и событие подтверждения.</div>
+</header>
+
+<nav class="doi-docs__nav" aria-label="Разделы документации">
+    <a href="#doi-doc-overview">Безопасная схема DOI</a>
+    <a href="#doi-doc-fields">Рекомендуемые поля</a>
+    <a href="#doi-doc-candidate">Неподтвержденный email</a>
+    <a href="#doi-doc-scenarios">Примеры настройки</a>
+    <a href="#doi-doc-tokens">Токены и синтаксис</a>
+    <a href="#doi-doc-evidence">Доказательство согласия</a>
+    <a href="#doi-doc-limitations">Ограничения</a>
+    <a href="#doi-doc-checklist">Чек-лист тестирования</a>
+</nav>
+
+<section class="doi-docs__section" id="doi-doc-overview">
+    <h2>Безопасная схема DOI</h2>
+    <ol>
+        <li>Человек сам заполняет форму и активно отмечает заранее не выбранную галочку согласия.</li>
+        <li>Форма фиксирует конкретную цель и версию показанного текста согласия.</li>
+        <li>Плагин отправляет письмо с человеческой ссылкой <code>{doi_url}</code>.</li>
+        <li>Человек открывает ссылку из своего почтового ящика.</li>
+        <li>Только после этого применяются confirmed tags, segments, обновления полей и опциональное письмо владельцу.</li>
+    </ol>
+    <div class="doi-docs__callout doi-docs__warning">Для несвязанных целей нужны отдельные галочки и записи. Подтверждение новостной рассылки не должно автоматически означать согласие на другую цель.</div>
+</section>
+
+<section class="doi-docs__section" id="doi-doc-fields">
+    <h2>Рекомендуемые поля контакта</h2>
+    <div class="doi-docs__table-wrap"><table>
+        <thead><tr><th>Пример алиаса</th><th>Тип</th><th>Назначение</th></tr></thead>
+        <tbody>
+            <tr><td><code>email_validate</code></td><td>Email или текст</td><td>Адрес-кандидат до подтверждения</td></tr>
+            <tr><td><code>optin_status</code></td><td>Выбор или текст</td><td><code>Pending</code>, <code>Confirmed</code> или <code>Withdrawn</code></td></tr>
+            <tr><td><code>doi_requested_at</code></td><td>Текст</td><td>Время запуска DOI формой</td></tr>
+            <tr><td><code>doi_confirmed_at</code></td><td>Текст</td><td>Время обработки ссылки подтверждения</td></tr>
+            <tr><td><code>doi_confirmed_ip</code></td><td>Текст</td><td>Опциональный IP запроса, если его хранение разрешено политикой</td></tr>
+            <tr><td><code>doi_proof_id</code></td><td>Текст</td><td>Случайный идентификатор корреляции</td></tr>
+            <tr><td><code>doi_source</code></td><td>Текст</td><td>Идентификатор формы, кампании или цели согласия</td></tr>
+            <tr><td><code>consent_text_version</code></td><td>Текст</td><td>Версия показанного уведомления и текста согласия</td></tr>
+        </tbody>
+    </table></div>
+    <p><code>{doi_timestamp}</code> записывается как <code>ДД.ММ.ГГГГ ЧЧ:ММ:СС</code> в часовом поясе сервера. Текстовое поле сохранит формат без изменений. Для более строгого evidence дополнительно сохраняйте UTC-время с часовым поясом во внешнем append-only журнале.</p>
+</section>
+
+<section class="doi-docs__section" id="doi-doc-candidate">
+    <h2>Не записывать неподтвержденный адрес в <code>email</code></h2>
+    <p>Если форма сразу пишет адрес в стандартный <code>email</code>, его до подтверждения могут использовать кампании, сегменты, уведомления или ручная отправка Mautic. Опечатка также может связать активность с адресом другого человека.</p>
+    <ol>
+        <li>Создайте пользовательское поле контакта с алиасом <code>email_validate</code>.</li>
+        <li>Свяжите email-поле публичной формы с ним, а не с <code>email</code>.</li>
+        <li>В <strong>Lead field alias for email (optional)</strong> укажите <code>email_validate</code>.</li>
+        <li>Переносите адрес только после DOI через <code>email={email_validate}</code>.</li>
+    </ol>
+    <div class="doi-docs__callout">До подтверждения у обычной отправки Mautic нет стандартного адреса получателя. Только DOI-action намеренно берет адрес-кандидат как fallback.</div>
+    <div class="doi-docs__callout doi-docs__warning">Собственный код или автоматизация, явно читающие <code>email_validate</code>, все равно могут отправить письмо. Ограничьте использование этого поля DOI-процессом.</div>
+</section>
+
+<section class="doi-docs__section" id="doi-doc-scenarios">
+    <h2>Примеры настройки</h2>
+    <div class="doi-docs__grid">
+        <article class="doi-docs__card"><h3>До DOI-письма</h3><pre><code>optin_status=Pending,doi_requested_at={doi_timestamp},doi_source=registration_form,consent_text_version=2026-09</code></pre><p>Фиксирует запрос, не выдавая его за подтвержденное согласие.</p></article>
+        <article class="doi-docs__card"><h3>После подтверждения</h3><pre><code>email={email_validate},optin_status=Confirmed,doi_confirmed_at={doi_timestamp},doi_confirmed_ip={doi_ip},doi_proof_id={tokenid}</code></pre><p>Переносит адрес-кандидат и сохраняет снимок подтверждения.</p></article>
+        <article class="doi-docs__card"><h3>Отдельное согласие на рассылку</h3><pre><code>newsletter_status=Confirmed,newsletter_confirmed_at={doi_timestamp},newsletter_proof_id={tokenid},doi_source=newsletter_footer</code></pre><p>Не смешивает согласие с регистрацией на событие или другой целью.</p></article>
+    </div>
+    <p>Tags и segments из remove-after-success играют роль pending: плагин добавляет их при запуске DOI и удаляет после подтверждения. Add-after-success задает confirmed-состояние.</p>
+</section>
+
+<section class="doi-docs__section" id="doi-doc-tokens">
+    <h2>Токены и синтаксис обновления</h2>
+    <p>Используйте в одной строке присваивания <code>alias=value</code>, разделенные запятыми. Не ставьте пробелы вокруг алиасов и <code>=</code>. Значения с запятыми или <code>=</code> не поддерживаются; пустым присваиванием нельзя очистить поле.</p>
+    <div class="doi-docs__table-wrap"><table>
+        <thead><tr><th>Токен</th><th>Значение</th><th>Применение</th></tr></thead>
+        <tbody>
+            <tr><td><code>{doi_timestamp}</code></td><td>Время выполнения в часовом поясе сервера</td><td>До DOI для времени запроса; после DOI для времени подтверждения</td></tr>
+            <tr><td><code>{doi_ip}</code></td><td>IP запроса подтверждения</td><td>После успешного DOI</td></tr>
+            <tr><td><code>{tokenid}</code></td><td>Новое случайное hexadecimal-значение</td><td>Одно proof-поле после DOI</td></tr>
+            <tr><td><code>{алиас_поля}</code></td><td>Текущее значение поля контакта</td><td>Полное значение присваивания, например <code>email={email_validate}</code></td></tr>
+        </tbody>
+    </table></div>
+    <p>Каждое присваивание с <code>{tokenid}</code> создает новое значение. Если нужен один ID корреляции, запишите его один раз. Безопасное игнорирование неизвестного алиаса не гарантируется.</p>
+    <h3>Токены только для письма</h3>
+    <p><code>{doi_url}</code> — обязательная видимая ссылка подтверждения. <code>{doi_nothuman}</code> — опциональная scanner-ловушка, которую нельзя делать видимой ссылкой. Они не работают как токены обновления полей.</p>
+</section>
+
+<section class="doi-docs__section" id="doi-doc-evidence">
+    <h2>Доказательство согласия</h2>
+    <p>Надежная запись должна показывать: кто действовал, на какую точную цель и формулировку соглашался, когда отправил форму, когда подтвердил ссылку из ящика и как зафиксирован отзыв. Сохраняйте audit entry плагина с <code>bundle=lead</code>, <code>object=doi</code>, <code>action=confirm_doi</code>, а при необходимости webhook или внешний архив.</p>
+    <ul>
+        <li>Храните неизменяемую копию или hash версии текста согласия/privacy notice.</li>
+        <li>Используйте защищенный append-only журнал, контроль доступа, резервное копирование и утвержденный срок хранения.</li>
+        <li>Отзыв согласия записывайте отдельным событием, не стирая историю новым статусом.</li>
+        <li>IP/User-Agent храните только при документированной необходимости: это персональные данные, а не обязательное доказательство во всех случаях.</li>
+    </ul>
+    <div class="doi-docs__callout doi-docs__danger">Редактируемые поля контакта — удобный оперативный снимок, но не достаточный неизменяемый журнал. DOI подтверждает доступ к ящику, а не юридическую личность. Цели, текст и сроки хранения должен утвердить DPO/юрист для применимой юрисдикции.</div>
+</section>
+
+<section class="doi-docs__section" id="doi-doc-limitations">
+    <h2>Важные ограничения</h2>
+    <ul>
+        <li>Альтернативное поле используется только при пустом стандартном <code>email</code>. Если основной адрес уже есть, DOI-письмо уйдет на него.</li>
+        <li>Fallback сам по себе не подтверждает замену адреса при сохраненном старом email. Смена адреса требует отдельного проверенного процесса.</li>
+        <li>Пустой <code>email</code> до подтверждения может влиять на идентификацию и дедупликацию Mautic. Проверьте новых, возвращающихся и параллельных посетителей.</li>
+        <li><code>{tokenid}</code> — случайный ID, а не цифровая подпись, timestamp authority или самостоятельное юридическое доказательство.</li>
+    </ul>
+</section>
+
+<section class="doi-docs__section" id="doi-doc-checklist">
+    <h2>Чек-лист тестирования</h2>
+    <ol>
+        <li>Отправьте новый адрес и убедитесь, что заполнен только <code>email_validate</code>.</li>
+        <li>До клика должно уйти только DOI-письмо.</li>
+        <li>Откройте <code>{doi_url}</code> и проверьте перенос email, статус, evidence-поля, tags и segments.</li>
+        <li>Включенное письмо владельцу должно уйти только после подтверждения.</li>
+        <li>Проверьте опечатку, повторную отправку, существующий контакт, scanner-cancel и delayed Messenger.</li>
+        <li>Проверьте хранение audit/webhook и отдельный процесс отзыва согласия.</li>
+    </ol>
+</section>

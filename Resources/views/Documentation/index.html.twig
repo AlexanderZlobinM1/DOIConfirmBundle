@@ -1,0 +1,75 @@
+{% set isIndex = 'index' == tmpl %}
+{% extends isIndex ? '@MauticCore/Default/content.html.twig' : '@MauticCore/Default/raw_output.html.twig' %}
+
+{% block mauticContent 'doiConfirmDocumentation' %}
+
+{% block headerTitle %}{{ 'jw.doi.documentation.header'|trans }}{% endblock %}
+
+{% block actions %}
+    <a class="btn btn-default" href="{{ path('mautic_plugin_index') }}" data-toggle="ajax">
+        <i class="ri-arrow-left-line" aria-hidden="true"></i>
+        {{ 'jw.doi.documentation.back'|trans }}
+    </a>
+{% endblock %}
+
+{% block content %}
+<style>
+    .doi-docs {
+        --doi-red: #c52b24;
+        --doi-green: #197149;
+        --doi-amber: #a35b00;
+        color: #30343b;
+        margin: 0 auto;
+        max-width: 1120px;
+        padding: 24px;
+    }
+    .doi-docs__intro,
+    .doi-docs__section {
+        background: #fff;
+        border: 1px solid #dfe3e8;
+        border-radius: 8px;
+        margin-bottom: 18px;
+        padding: 26px;
+    }
+    .doi-docs__intro { border-top: 4px solid var(--doi-red); }
+    .doi-docs h1 { font-size: 28px; margin: 0 0 10px; }
+    .doi-docs h2 { font-size: 21px; margin: 0 0 16px; }
+    .doi-docs h3 { font-size: 15px; margin: 0 0 7px; }
+    .doi-docs p,
+    .doi-docs li,
+    .doi-docs td,
+    .doi-docs th { line-height: 1.6; }
+    .doi-docs__lead { color: #5f6670; font-size: 16px; margin: 0; max-width: 880px; }
+    .doi-docs__nav,
+    .doi-docs__grid { display: grid; gap: 12px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .doi-docs__nav { margin: 18px 0; }
+    .doi-docs__nav a,
+    .doi-docs__card { background: #f7f8fa; border: 1px solid #dfe3e8; border-radius: 6px; padding: 14px; }
+    .doi-docs__nav a { color: #343a42; font-weight: 700; text-decoration: none; }
+    .doi-docs__nav a:hover,
+    .doi-docs__nav a:focus { border-color: var(--doi-red); color: var(--doi-red); }
+    .doi-docs__callout { background: #edf7f2; border-left: 4px solid var(--doi-green); margin-top: 16px; padding: 14px 16px; }
+    .doi-docs__warning { background: #fff6e8; border-left-color: var(--doi-amber); }
+    .doi-docs__danger { background: #fff0ef; border-left-color: var(--doi-red); }
+    .doi-docs table { border-collapse: collapse; width: 100%; }
+    .doi-docs th,
+    .doi-docs td { border-bottom: 1px solid #e4e7eb; padding: 10px 8px; text-align: left; vertical-align: top; }
+    .doi-docs code { background: #f1f2f4; border-radius: 4px; color: #8d211c; padding: 2px 5px; }
+    .doi-docs pre { background: #272b31; border-radius: 6px; color: #f7f8fa; overflow-x: auto; padding: 14px; }
+    .doi-docs pre code { background: transparent; color: inherit; padding: 0; }
+    .doi-docs ol,
+    .doi-docs ul { padding-left: 22px; }
+    @media (max-width: 850px) {
+        .doi-docs__nav,
+        .doi-docs__grid { grid-template-columns: 1fr; }
+        .doi-docs { padding: 12px; }
+        .doi-docs__intro,
+        .doi-docs__section { padding: 20px; }
+        .doi-docs__table-wrap { overflow-x: auto; }
+    }
+</style>
+
+<main class="doi-docs">
+    {% include documentationTemplate %}
+</main>
+{% endblock %}

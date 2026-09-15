@@ -1,0 +1,120 @@
+<header class="doi-docs__intro">
+    <h1>DOI Confirm Bundle</h1>
+    <p class="doi-docs__lead">Безбедна потврда е-поште, ажурирање поља контакта и практично чување доказа о сагласности за форме које контакти сами попуњавају.</p>
+    <div class="doi-docs__callout">DOI клик доказује приступ поштанском сандучету, али не и грађански идентитет особе. Сачувајте и слање форме и догађај потврде.</div>
+</header>
+
+<nav class="doi-docs__nav" aria-label="Одељци документације">
+    <a href="#doi-doc-overview">Безбедан DOI модел</a>
+    <a href="#doi-doc-fields">Препоручена поља</a>
+    <a href="#doi-doc-candidate">Непотврђена адреса</a>
+    <a href="#doi-doc-scenarios">Примери подешавања</a>
+    <a href="#doi-doc-tokens">Токени и синтакса</a>
+    <a href="#doi-doc-evidence">Доказ сагласности</a>
+    <a href="#doi-doc-limitations">Ограничења</a>
+    <a href="#doi-doc-checklist">Листа провере</a>
+</nav>
+
+<section class="doi-docs__section" id="doi-doc-overview">
+    <h2>Безбедан DOI модел</h2>
+    <ol>
+        <li>Особа сама попуњава форму и активно означава поље сагласности које није унапред означено.</li>
+        <li>Форма бележи конкретну сврху и верзију приказаног текста сагласности.</li>
+        <li>Додатак шаље поруку са људском везом <code>{doi_url}</code>.</li>
+        <li>Особа отвара везу из свог поштанског сандучета.</li>
+        <li>Тек тада се примењују потврђене ознаке, сегменти, измене поља и опциона порука власнику.</li>
+    </ol>
+    <div class="doi-docs__callout doi-docs__warning">За неповезане сврхе користите одвојене сагласности и записе. Потврда билтена не сме аутоматски да одобри другу сврху.</div>
+</section>
+
+<section class="doi-docs__section" id="doi-doc-fields">
+    <h2>Препоручена поља контакта</h2>
+    <div class="doi-docs__table-wrap"><table>
+        <thead><tr><th>Пример алијаса</th><th>Тип</th><th>Намена</th></tr></thead>
+        <tbody>
+            <tr><td><code>email_validate</code></td><td>Е-пошта или текст</td><td>Адреса кандидат која чека потврду</td></tr>
+            <tr><td><code>optin_status</code></td><td>Избор или текст</td><td><code>Pending</code>, <code>Confirmed</code> или <code>Withdrawn</code></td></tr>
+            <tr><td><code>doi_requested_at</code></td><td>Текст</td><td>Време покретања DOI процеса</td></tr>
+            <tr><td><code>doi_confirmed_at</code></td><td>Текст</td><td>Време обраде потврде</td></tr>
+            <tr><td><code>doi_confirmed_ip</code></td><td>Текст</td><td>Опциона IP адреса захтева, ако политика то дозвољава</td></tr>
+            <tr><td><code>doi_proof_id</code></td><td>Текст</td><td>Насумични корелациони идентификатор</td></tr>
+            <tr><td><code>doi_source</code></td><td>Текст</td><td>Идентификатор форме, кампање или сврхе</td></tr>
+            <tr><td><code>consent_text_version</code></td><td>Текст</td><td>Верзија приказаног обавештења и текста сагласности</td></tr>
+        </tbody>
+    </table></div>
+    <p><code>{doi_timestamp}</code> има формат <code>ДД.ММ.ГГГГ ЧЧ:ММ:СС</code> у временској зони сервера. Текстуално поље га чува без измене. За јачи доказ додатно чувајте UTC време са зоном у спољном append-only дневнику.</p>
+</section>
+
+<section class="doi-docs__section" id="doi-doc-candidate">
+    <h2>Не чувати непотврђену адресу у <code>email</code></h2>
+    <p>Ако форма одмах упише адресу у стандардно поље <code>email</code>, Mautic кампање, сегменти, обавештења или ручно слање могу је користити пре потврде. Грешка у куцању може повезати активност са туђом адресом.</p>
+    <ol>
+        <li>Направите прилагођено поље <code>email_validate</code>.</li>
+        <li>Повежите email унос форме са тим пољем, а не са <code>email</code>.</li>
+        <li>У <strong>Lead field alias for email (optional)</strong> унесите <code>email_validate</code>.</li>
+        <li>Тек после DOI потврде копирајте са <code>email={email_validate}</code>.</li>
+    </ol>
+    <div class="doi-docs__callout">Пре потврде обично Mautic слање нема стандардну адресу примаоца. Само DOI акција намерно користи кандидат као резервну адресу.</div>
+    <div class="doi-docs__callout doi-docs__warning">Сопствени код који изричито чита <code>email_validate</code> и даље може да шаље. Ограничите то поље на DOI процес.</div>
+</section>
+
+<section class="doi-docs__section" id="doi-doc-scenarios">
+    <h2>Примери подешавања</h2>
+    <div class="doi-docs__grid">
+        <article class="doi-docs__card"><h3>Пре DOI поруке</h3><pre><code>optin_status=Pending,doi_requested_at={doi_timestamp},doi_source=registration_form,consent_text_version=2026-09</code></pre><p>Бележи захтев без означавања потврђене сагласности.</p></article>
+        <article class="doi-docs__card"><h3>После потврде</h3><pre><code>email={email_validate},optin_status=Confirmed,doi_confirmed_at={doi_timestamp},doi_confirmed_ip={doi_ip},doi_proof_id={tokenid}</code></pre><p>Преноси адресу кандидат и чува снимак потврде.</p></article>
+        <article class="doi-docs__card"><h3>Посебна сврха билтена</h3><pre><code>newsletter_status=Confirmed,newsletter_confirmed_at={doi_timestamp},newsletter_proof_id={tokenid},doi_source=newsletter_footer</code></pre><p>Не меша сагласност са догађајем или другом сврхом.</p></article>
+    </div>
+    <p>Remove-after-success ознаке и сегменти представљају pending стање: додатак их додаје на почетку DOI и уклања после потврде. Add-after-success представља confirmed стање.</p>
+</section>
+
+<section class="doi-docs__section" id="doi-doc-tokens">
+    <h2>Токени и синтакса ажурирања</h2>
+    <p>Користите зарезом раздвојене доделе <code>alias=value</code> у једном реду. Не стављајте размаке око алијаса или <code>=</code>. Вредности са зарезом или <code>=</code> нису подржане; празна додела не може да обрише поље.</p>
+    <div class="doi-docs__table-wrap"><table>
+        <thead><tr><th>Токен</th><th>Вредност</th><th>Употреба</th></tr></thead>
+        <tbody>
+            <tr><td><code>{doi_timestamp}</code></td><td>Време извршавања у зони сервера</td><td>Пре DOI за захтев; после DOI за потврду</td></tr>
+            <tr><td><code>{doi_ip}</code></td><td>IP захтева потврде</td><td>После успешног DOI</td></tr>
+            <tr><td><code>{tokenid}</code></td><td>Нова насумична hexadecimal вредност</td><td>Једно proof поље после DOI</td></tr>
+            <tr><td><code>{алијас_поља}</code></td><td>Тренутна вредност контакт поља</td><td>Као цела вредност, нпр. <code>email={email_validate}</code></td></tr>
+        </tbody>
+    </table></div>
+    <p>Свака додела са <code>{tokenid}</code> прави различиту вредност. Упишите га једном ако је потребан стабилан корелациони ID. Непознат алијас није гарантовано безбедно игнорисан.</p>
+    <h3>Токени само за DOI поруку</h3>
+    <p><code>{doi_url}</code> је обавезна видљива веза за потврду. <code>{doi_nothuman}</code> је опциона замка за скенер и не сме бити видљива веза. То нису токени за ажурирање поља.</p>
+</section>
+
+<section class="doi-docs__section" id="doi-doc-evidence">
+    <h2>Доказ сагласности</h2>
+    <p>Поуздан запис показује ко је поступио, за коју тачну сврху и текст, када је форма послата, када је потврђена веза из сандучета и како је забележено повлачење. Чувајте audit запис са <code>bundle=lead</code>, <code>object=doi</code>, <code>action=confirm_doi</code> и потребну webhook или спољну архиву.</p>
+    <ul>
+        <li>Чувајте непроменљиву копију или hash верзије текста сагласности/privacy notice.</li>
+        <li>Користите заштићен append-only дневник, контролу приступа, резервне копије и одобрен рок чувања.</li>
+        <li>Повлачење бележите као посебан догађај, без брисања историје новим статусом.</li>
+        <li>IP/User-Agent чувајте само када је потреба документована; то су лични подаци.</li>
+    </ul>
+    <div class="doi-docs__callout doi-docs__danger">Изменљива контакт поља су оперативни снимак, али нису довољан непроменљив доказ. DOI доказује приступ сандучету, не правни идентитет. DPO или правник треба да одобри сврхе, текст и рокове за важећу јурисдикцију.</div>
+</section>
+
+<section class="doi-docs__section" id="doi-doc-limitations">
+    <h2>Важна ограничења</h2>
+    <ul>
+        <li>Алтернативно поље се користи само када је стандардни <code>email</code> празан. Ако адреса већ постоји, DOI порука иде на њу.</li>
+        <li>Овај fallback не потврђује нову адресу док стара остаје примарна. Промена адресе захтева посебан тестиран процес.</li>
+        <li>Празан <code>email</code> до потврде може утицати на идентификацију и дедупликацију. Тестирајте нове, повратне и паралелне пријаве.</li>
+        <li><code>{tokenid}</code> није потпис, овлашћени временски жиг нити самостални правни доказ.</li>
+    </ul>
+</section>
+
+<section class="doi-docs__section" id="doi-doc-checklist">
+    <h2>Листа провере</h2>
+    <ol>
+        <li>Пошаљите нову адресу и проверите да је попуњен само <code>email_validate</code>.</li>
+        <li>Пре клика сме бити послата само DOI порука.</li>
+        <li>Отворите <code>{doi_url}</code> и проверите пренос у email, статус, доказна поља, ознаке и сегменте.</li>
+        <li>Укључена порука власнику сме бити послата тек после потврде.</li>
+        <li>Тестирајте грешку у адреси, поновно слање, постојећи контакт, scanner cancel и delayed Messenger.</li>
+        <li>Проверите чување audit/webhook записа и процес повлачења сагласности.</li>
+    </ol>
+</section>

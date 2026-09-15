@@ -1,5 +1,7 @@
 # CHANGELOG
 
+- 3.0.0: Added localized built-in HTML documentation with safe candidate-email
+  workflows, tokens, evidence recommendations, limitations and test scenarios.
 - 2.1.7: Added translated purpose headings and detailed Mautic tooltips for the
   contact confirmation email and post-confirmation owner notification.
 - 2.1.6: Primary email and the complete owner section now subtract one Mautic
