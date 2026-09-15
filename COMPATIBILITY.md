@@ -134,3 +134,14 @@ Mautic's `mautic.email.model.send_email_to_user` service after DOI success
 actions have completed; failures are logged as warnings and do not roll back
 confirmed tags, segments, field updates, DNC removal, audit, tracking or
 webhook dispatch.
+
+## Patch note for 2.1.1
+
+2.1.1 keeps the 2.1.0 storage and post-confirmation delivery semantics, but
+changes the email action form rendering. The primary DOI email selector now
+delegates to Mautic's native email-send-list Twig block, and the nested
+`owner_email.useremail` field delegates to Mautic's native form-action email
+selector/button Twig block instead of duplicating button markup in this plugin.
+The owner wrapper is hidden when `send_owner_email` is unchecked and is tied to
+the checkbox through Mautic's `data-show-on` condition plus a lightweight
+fallback listener.

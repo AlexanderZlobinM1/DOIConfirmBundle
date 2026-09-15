@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.1.1 - 2026-09-15
+
+- Render both the primary DOI email selector and the post-confirmation owner
+  email selector through Mautic's native email form theme blocks, so the email
+  select and New/Edit/Preview buttons follow the active Mautic version's own
+  markup.
+- Hide the owner email block by default when the checkbox is unchecked, and
+  toggle it from the checkbox without exposing the nested fields prematurely.
+
 ## 2.1.0 - 2026-09-15
 
 - Add an optional `Send owner email after DOI confirmation` checkbox to the DOI

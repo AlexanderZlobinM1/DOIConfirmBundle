@@ -1,6 +1,6 @@
-# DOIConfirmBundle 2.1.0: руководство оператора
+# DOIConfirmBundle 2.1.1: руководство оператора
 
-Документ описывает canonical plugin source `DOIConfirmBundle` версии `2.1.0`
+Документ описывает canonical plugin source `DOIConfirmBundle` версии `2.1.1`
 для Mautic 5.x, 6.x и 7.x, включая проверенный сценарий Mautic 7.1.3.
 Live-установку, demo-цепочку и приемку на `news.show-master.ru` выполняет
 SalesSnap-Operation. Этот репозиторий содержит только source, документацию и
@@ -79,7 +79,9 @@ mutations.
    штатные поля Mautic из owner-email action: `Email to send`, кнопки
    New/Edit/Preview Email и `Send email to user`. Не добавляйте отдельную
    стандартную action отправки владельцу, если письмо не должно уходить до
-   DOI-click.
+   DOI-click. Основной DOI email block и owner email block рендерятся штатными
+   Mautic email templates текущей версии Mautic, а не отдельной
+   plugin-разметкой.
 
 Если UI отличается от скриншотов или перевода, ориентируйтесь на source keys и
 storage names:
@@ -193,7 +195,7 @@ instance, не plugin source task.
 
 Быстрые проверки без изменения Mautic core:
 
-1. Убедиться, что plugin version в Mautic registry равен `2.1.0`.
+1. Убедиться, что plugin version в Mautic registry равен `2.1.1`.
 2. Убедиться, что `/s/plugins/config/DoiReport` открывается не 404, а обычной
    страницей настройки integration.
 3. Убедиться, что integration `Doi Report` active.
@@ -255,7 +257,7 @@ Rollback live instance выполняет SalesSnap-Operation штатным MCC
 Plugin source contract для rollback:
 
 1. Предыдущий опубликованный tag: `v2.0.13`.
-2. Текущий опубликованный tag: `v2.1.0`.
+2. Текущий опубликованный tag: `v2.1.1`.
 3. Bundle directory: `plugins/DOIConfirmBundle`.
 4. Runtime state хранится в Mautic form action config, integration settings,
    contacts, DNC, audit log и webhook queue; plugin rollback не должен purge
@@ -265,9 +267,9 @@ Plugin source contract для rollback:
 6. Если async Messenger был настроен для `DoiConfirmationMessage`, worker и
    queue state проверяются отдельно владельцем instance.
 
-## Проверка v2.1.0 для Mautic 7.x
+## Проверка v2.1.1 для Mautic 7.x
 
-Проверка source выполнена на tag `v2.1.0`:
+Проверка source выполнена на tag `v2.1.1`:
 
 - integration discovery aligned: `Integration/DoiReportIntegration.php`,
   service id `mautic.integration.doireport`, object name `DoiReport`;
@@ -288,6 +290,8 @@ Plugin source contract для rollback:
   logged if it fails, and email dispatch continues;
 - optional owner/user email settings are hidden while unchecked and render only
   native Mautic email/user fields when enabled;
+- primary DOI email select/buttons and owner/user email select/buttons reuse
+  the current Mautic email selector Twig blocks;
 - owner/user notification dispatch runs after final DOI confirmation and is
   skipped when the checkbox is not enabled;
 - expected Plugins UI config route: `/s/plugins/config/DoiReport`;

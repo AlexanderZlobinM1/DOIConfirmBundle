@@ -168,6 +168,14 @@ try {
     if (!$container->get('twig')->getLoader()->exists($doiAction['template'])) {
         throw new RuntimeException(sprintf('Disabled DOI action builder template %s was not found.', $doiAction['template']));
     }
+    foreach ([
+        '@MauticEmail/FormTheme/EmailSendList/emailsend_list_row.html.twig',
+        '@MauticEmail/FormTheme/FormAction/_formaction_properties_useremail_row.html.twig',
+    ] as $nativeEmailTheme) {
+        if (!$container->get('twig')->getLoader()->exists($nativeEmailTheme)) {
+            throw new RuntimeException(sprintf('Native Mautic email form theme %s was not found.', $nativeEmailTheme));
+        }
+    }
     $propertiesBuilder = new Symfony\Component\Form\FormBuilder(
         'doi_action_properties',
         null,
