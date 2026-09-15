@@ -1,5 +1,17 @@
 # Changelog
 
+## 3.0.1 - 2026-09-15
+
+- Restore Mautic's complete native integration form, including the `Active`
+  switch, save handling and modal footer.
+- Append only a standard documentation button through Mautic's supported
+  custom form-notes extension point instead of replacing the integration form
+  template.
+- Add the standard Sales Snap maintainer footer used by other maintained
+  plugins without changing the existing plugin icon.
+- Add regression coverage that rejects any future DOI `getFormTemplate()`
+  override and verifies the native template plus custom documentation note.
+
 ## 3.0.0 - 2026-09-15
 
 - Add admin-only built-in HTML documentation linked from the Doi Report plugin

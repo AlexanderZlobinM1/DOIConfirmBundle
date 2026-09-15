@@ -1,5 +1,8 @@
 # CHANGELOG
 
+- 3.0.1: Restored Mautic's native integration form and Active switch; the
+  documentation is now added as a standard button through form notes, with the
+  standard Sales Snap maintainer footer.
 - 3.0.0: Added localized built-in HTML documentation with safe candidate-email
   workflows, tokens, evidence recommendations, limitations and test scenarios.
 - 2.1.7: Added translated purpose headings and detailed Mautic tooltips for the

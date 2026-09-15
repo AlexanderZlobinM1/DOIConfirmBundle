@@ -217,3 +217,12 @@ field-update and email tokens, parser limits, multiple-purpose examples,
 recommended evidence fields, immutable audit retention and a validation
 checklist. This documentation feature does not change DOI runtime semantics,
 public confirmation routes, storage schema or existing form-action keys.
+
+## Patch note for 3.0.1
+
+3.0.1 removes the DOI integration's custom `getFormTemplate()` override. That
+override replaced Mautic's complete native integration form and therefore hid
+the runtime `Active` switch. The integration now retains
+`@MauticPlugin/Integration/form.html.twig` and contributes only the
+documentation button via the native `getFormNotes('custom')` extension point.
+No DOI runtime, storage, route or documentation-page behavior changed.

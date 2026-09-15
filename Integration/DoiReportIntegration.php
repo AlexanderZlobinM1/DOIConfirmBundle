@@ -43,8 +43,16 @@ class DoiReportIntegration extends AbstractIntegration
         return 'plugins/DOIConfirmBundle/Assets/img/icon.png';
     }
 
-    public function getFormTemplate(): string
+    public function getFormNotes($section)
     {
-        return '@DOIConfirm/Integration/form.html.twig';
+        if ('custom' === $section) {
+            return [
+                'custom'     => true,
+                'template'   => '@DOIConfirm/Integration/form.html.twig',
+                'parameters' => [],
+            ];
+        }
+
+        return parent::getFormNotes($section);
     }
 }

@@ -38,8 +38,15 @@ $integration = (new ReflectionClass(MauticPlugin\DOIConfirmBundle\Integration\Do
 if ('DoiReport' !== $integration->getName()) {
     throw new RuntimeException('DoiReport integration object name mismatch.');
 }
-if ('@DOIConfirm/Integration/form.html.twig' !== $integration->getFormTemplate()) {
-    throw new RuntimeException('DoiReport integration must expose the built-in documentation link template.');
+if ('@MauticPlugin/Integration/form.html.twig' !== $integration->getFormTemplate()) {
+    throw new RuntimeException('DoiReport integration must retain Mautic native form rendering and its Active switch.');
+}
+$customFormNotes = $integration->getFormNotes('custom');
+if (!is_array($customFormNotes)
+    || true !== ($customFormNotes['custom'] ?? null)
+    || '@DOIConfirm/Integration/form.html.twig' !== ($customFormNotes['template'] ?? null)
+) {
+    throw new RuntimeException('DoiReport integration must append the documentation link through native custom form notes.');
 }
 $documentationRoute = $config['routes']['main']['doiconfirm_documentation'] ?? null;
 if (!is_array($documentationRoute)

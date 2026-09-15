@@ -60,7 +60,8 @@ $index = file_get_contents($root.'/Resources/views/Documentation/index.html.twig
 $integration = file_get_contents($root.'/Resources/views/Integration/form.html.twig');
 $controller = file_get_contents($root.'/Controller/DocumentationController.php');
 $config = file_get_contents($root.'/Config/config.php');
-if (false === $index || false === $integration || false === $controller || false === $config) {
+$integrationClass = file_get_contents($root.'/Integration/DoiReportIntegration.php');
+if (false === $index || false === $integration || false === $controller || false === $config || false === $integrationClass) {
     throw new RuntimeException('Documentation shell files could not be read.');
 }
 foreach ([
@@ -70,10 +71,25 @@ foreach ([
     [$controller, '$request->getLocale()'],
     [$config, "'doiconfirm_documentation'"],
     [$config, "'method'     => ['GET']"],
+    [$integrationClass, "if ('custom' === \$section)"],
+    [$integrationClass, "'template'   => '@DOIConfirm/Integration/form.html.twig'"],
+    [$integrationClass, 'return parent::getFormNotes($section)'],
 ] as [$haystack, $needle]) {
     if (!str_contains($haystack, $needle)) {
         throw new RuntimeException(sprintf('Documentation wiring is missing %s.', $needle));
     }
+}
+if (str_contains($integrationClass, 'function getFormTemplate')) {
+    throw new RuntimeException('DOI must not replace Mautic native integration form or hide its Active switch.');
+}
+if (!str_contains($integration, 'class="btn btn-default"')
+    || !str_contains($integration, 'https://sales-snap.com')
+    || !str_contains($integration, '>Sales Snap</a>')
+    || str_contains($integration, '<style')
+    || str_contains($integration, 'form_start')
+    || str_contains($integration, 'form_row')
+) {
+    throw new RuntimeException('DOI integration form note must contain the standard documentation button and Sales Snap branding only.');
 }
 
 echo 'DOCUMENTATION en_US,de_DE,ru,ru_RU,sr_RS complete admin-only'.PHP_EOL;

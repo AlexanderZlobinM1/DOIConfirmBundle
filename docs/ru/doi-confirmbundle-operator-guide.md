@@ -1,6 +1,6 @@
-# DOIConfirmBundle 3.0.0: руководство оператора
+# DOIConfirmBundle 3.0.1: руководство оператора
 
-Документ описывает canonical plugin source `DOIConfirmBundle` версии `3.0.0`
+Документ описывает canonical plugin source `DOIConfirmBundle` версии `3.0.1`
 для Mautic 5.x, 6.x и 7.x, включая проверенный сценарий Mautic 7.1.3.
 Live-установку, demo-цепочку и приемку на `news.show-master.ru` выполняет
 SalesSnap-Operation. Этот репозиторий содержит только source, документацию и
@@ -202,7 +202,7 @@ instance, не plugin source task.
 
 Быстрые проверки без изменения Mautic core:
 
-1. Убедиться, что plugin version в Mautic registry равен `3.0.0`.
+1. Убедиться, что plugin version в Mautic registry равен `3.0.1`.
 2. Убедиться, что `/s/plugins/config/DoiReport` открывается не 404, а обычной
    страницей настройки integration.
 3. Убедиться, что integration `Doi Report` active.
@@ -263,8 +263,8 @@ cache rebuild — отдельная operational operation.
 Rollback live instance выполняет SalesSnap-Operation штатным MCC/MCD путем.
 Plugin source contract для rollback:
 
-1. Предыдущий опубликованный tag: `v2.1.6`.
-2. Текущий опубликованный tag: `v3.0.0`.
+1. Предыдущий опубликованный tag: `v3.0.0`.
+2. Текущий опубликованный tag: `v3.0.1`.
 3. Bundle directory: `plugins/DOIConfirmBundle`.
 4. Runtime state хранится в Mautic form action config, integration settings,
    contacts, DNC, audit log и webhook queue; plugin rollback не должен purge
@@ -274,9 +274,9 @@ Plugin source contract для rollback:
 6. Если async Messenger был настроен для `DoiConfirmationMessage`, worker и
    queue state проверяются отдельно владельцем instance.
 
-## Проверка v3.0.0 для Mautic 6.x и 7.x
+## Проверка v3.0.1 для Mautic 6.x и 7.x
 
-Проверка source выполнена для release `v3.0.0`:
+Проверка source выполнена для release `v3.0.1`:
 
 - integration discovery aligned: `Integration/DoiReportIntegration.php`,
   service id `mautic.integration.doireport`, object name `DoiReport`;
@@ -300,6 +300,9 @@ Plugin source contract для rollback:
 - admin-only встроенная HTML-справка доступна из карточки `Doi Report`,
   выбирает `en_US`, `de_DE`, `ru`/`ru_RU` или `sr_RS` по текущей locale Mautic
   и содержит полные сценарии candidate email, tokens, evidence и проверки;
+- integration использует штатный Mautic form template с обычным переключателем
+  `Active`; через custom form notes добавляются только кнопка справки и нижняя
+  строка Sales Snap;
 - initial submit applies pending DOI tags/segments from the existing
   remove-after-success settings, while confirmation removes pending state and
   applies confirmed tags/segments idempotently;
