@@ -274,11 +274,18 @@ try {
     if (preg_match('/id="formaction_properties_owner_email_container"[^>]*class="[^"]*col-/', $renderedProperties)) {
         throw new RuntimeException('Owner email settings still have an extra grid column that offsets native fields and buttons.');
     }
+    if (2 !== substr_count($renderedProperties, 'class="doi-native-email-controls"')
+        || !str_contains($renderedProperties, '.doi-native-email-controls > .row')
+        || !str_contains($renderedProperties, 'margin-right: 0;')
+        || !str_contains($renderedProperties, 'padding-right: 0 !important;')
+    ) {
+        throw new RuntimeException('Native email grid gutters were not normalized to the standard form field width.');
+    }
     if (!str_contains($renderedProperties, "document.getElementById(&#039;formaction_properties_owner_email_container&#039;)")) {
         throw new RuntimeException('Owner email checkbox did not receive its direct visibility toggle.');
     }
     echo 'OWNER_EMAIL_FIELDS useremail,user_id'.PHP_EOL;
-    echo 'OWNER_EMAIL_LAYOUT native-shared aligned hidden-when-unchecked'.PHP_EOL;
+    echo 'OWNER_EMAIL_LAYOUT native-shared standard-field-width hidden-when-unchecked'.PHP_EOL;
     echo 'PASS '.$bundle.' Mautic '.$kernel->getVersion().' PHP '.PHP_VERSION.PHP_EOL;
 } catch (Throwable $exception) {
     fwrite(STDERR, get_class($exception).': '.$exception->getMessage().PHP_EOL);

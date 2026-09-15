@@ -171,3 +171,12 @@ wrapper. Both native `emailsend_list_row` blocks now receive the same available
 width and horizontal origin, so their selectors and New/Edit/Preview buttons
 align. The neutral wrapper still starts hidden server-side while unchecked and
 is shown or hidden directly by the checkbox.
+
+## Patch note for 2.1.5
+
+2.1.5 renders the primary and owner native `emailsend_list_row` blocks directly
+from the same parent Twig block. Scoped DOI styles neutralize only the outer
+row margins and column padding produced by that native block, matching both
+email selectors to ordinary full-width form fields such as the owner user,
+tags and segments selectors. All fields therefore share the same right edge
+without replacing Mautic's version-specific email controls or buttons.

@@ -1,28 +1,36 @@
 {% use '@MauticEmail/FormTheme/EmailSendList/emailsend_list_row.html.twig' with emailsend_list_row as mautic_emailsend_list_row %}
 
-{% block _formaction_properties_owner_email_useremail_row %}
+{% block jw_mautic_form_type_jw_emailsend_list_row %}
+<style>
+    .doi-native-email-controls > .row {
+        margin-left: 0;
+        margin-right: 0;
+    }
+    .doi-native-email-controls > .row > [class*="col-"] {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+</style>
+<div class="doi-native-email-controls">
     {{ block('mautic_emailsend_list_row') }}
-{% endblock %}
+</div>
 
-{% block jw_doi_owner_email_row %}
-    {% set ownerToggle = form.parent.children.send_owner_email %}
-    {% set ownerEnabled = ownerToggle.vars.checked|default(false) %}
+{% if form.send_owner_email is defined and form.owner_email is defined %}
+    {% set ownerEnabled = form.send_owner_email.vars.checked|default(false) %}
+    {{ form_row(form.send_owner_email) }}
     <div
-        id="{{ id }}_container"
+        id="{{ form.owner_email.vars.id }}_container"
         class="doi-owner-email-fields{% if not ownerEnabled %} hide{% endif %}"
         {% if not ownerEnabled %}hidden style="display:none"{% endif %}
     >
-        {{ form_row(form.useremail) }}
-        {{ form_row(form.user_id) }}
+        <div class="doi-native-email-controls">
+            {% with {'form': form.owner_email.useremail} %}
+                {{ block('mautic_emailsend_list_row') }}
+            {% endwith %}
+        </div>
+        {{ form_row(form.owner_email.user_id) }}
     </div>
-{% endblock %}
-
-{% block jw_mautic_form_type_jw_emailsend_list_row %}
-{{ block('mautic_emailsend_list_row') }}
-
-{% if form.send_owner_email is defined and form.owner_email is defined %}
-    {{ form_row(form.send_owner_email) }}
-    {{ form_row(form.owner_email) }}
+    {% do form.owner_email.setRendered() %}
 {% endif %}
 
 {{ form_rest(form) }}

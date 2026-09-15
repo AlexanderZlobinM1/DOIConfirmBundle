@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.1.5 - 2026-09-15
+
+- Render both native email blocks directly at the same Twig level instead of
+  routing the owner email through an additional compound `form_row`.
+- Normalize the native email template's outer row and column gutters inside
+  the DOI action, so the primary email, owner email, user selector and all
+  ordinary DOI fields share one right edge.
+
 ## 2.1.4 - 2026-09-15
 
 - Remove the extra Bootstrap grid column around the conditional owner-email
