@@ -163,3 +163,11 @@ and nested owner email now render through the same native Mautic
 form row, starts hidden when `send_owner_email` is unchecked and is toggled by
 an event handler attached directly to the checkbox. This avoids relying on an
 inline script element inside Mautic's AJAX-loaded action editor.
+
+## Patch note for 2.1.4
+
+2.1.4 removes the extra Bootstrap column from the conditional owner-email
+wrapper. Both native `emailsend_list_row` blocks now receive the same available
+width and horizontal origin, so their selectors and New/Edit/Preview buttons
+align. The neutral wrapper still starts hidden server-side while unchecked and
+is shown or hidden directly by the checkbox.

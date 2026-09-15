@@ -267,16 +267,18 @@ try {
         throw new RuntimeException(sprintf('Primary and owner email controls did not use the same native Mautic email-send-list layout (%d blocks rendered).', $nativeLayoutCount));
     }
     if (!str_contains($renderedProperties, 'id="formaction_properties_owner_email_container"')
-        || !str_contains($renderedProperties, 'data-show-on=\'{"formaction_properties_send_owner_email":"checked"}\'')
         || !preg_match('/id="formaction_properties_owner_email_container"[^>]*hidden[^>]*style="display:none"/', $renderedProperties)
     ) {
-        throw new RuntimeException('Unchecked owner email settings were not rendered hidden and bound to the checkbox.');
+        throw new RuntimeException('Unchecked owner email settings were not rendered hidden.');
+    }
+    if (preg_match('/id="formaction_properties_owner_email_container"[^>]*class="[^"]*col-/', $renderedProperties)) {
+        throw new RuntimeException('Owner email settings still have an extra grid column that offsets native fields and buttons.');
     }
     if (!str_contains($renderedProperties, "document.getElementById(&#039;formaction_properties_owner_email_container&#039;)")) {
         throw new RuntimeException('Owner email checkbox did not receive its direct visibility toggle.');
     }
     echo 'OWNER_EMAIL_FIELDS useremail,user_id'.PHP_EOL;
-    echo 'OWNER_EMAIL_LAYOUT native-shared hidden-when-unchecked'.PHP_EOL;
+    echo 'OWNER_EMAIL_LAYOUT native-shared aligned hidden-when-unchecked'.PHP_EOL;
     echo 'PASS '.$bundle.' Mautic '.$kernel->getVersion().' PHP '.PHP_VERSION.PHP_EOL;
 } catch (Throwable $exception) {
     fwrite(STDERR, get_class($exception).': '.$exception->getMessage().PHP_EOL);

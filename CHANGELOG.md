@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.1.4 - 2026-09-15
+
+- Remove the extra Bootstrap grid column around the conditional owner-email
+  section so its selector, buttons and user field align with the primary DOI
+  email controls.
+- Keep unchecked server-side hiding and the checkbox's direct visibility
+  toggle without introducing layout padding.
+
 ## 2.1.3 - 2026-09-15
 
 - Render the primary DOI email and optional owner email with the same native

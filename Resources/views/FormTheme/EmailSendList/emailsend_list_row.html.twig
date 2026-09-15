@@ -9,8 +9,7 @@
     {% set ownerEnabled = ownerToggle.vars.checked|default(false) %}
     <div
         id="{{ id }}_container"
-        class="col-xs-12 doi-owner-email-fields{% if not ownerEnabled %} hide{% endif %}"
-        data-show-on='{"{{ ownerToggle.vars.id }}":"checked"}'
+        class="doi-owner-email-fields{% if not ownerEnabled %} hide{% endif %}"
         {% if not ownerEnabled %}hidden style="display:none"{% endif %}
     >
         {{ form_row(form.useremail) }}
