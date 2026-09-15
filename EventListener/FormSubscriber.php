@@ -450,6 +450,8 @@ class FormSubscriber implements EventSubscriberInterface
             'addToLists' =>  $config['add_campaign_doi_success_lists'] ?? [],
             'removeFromLists' =>  $config['remove_campaign_doi_success_lists'] ?? [],
             'leadFieldUpdate' => $config['lead_field_update'] ?? '',
+            'sendOwnerEmail' => !empty($config['send_owner_email']),
+            'ownerEmail' => $config['owner_email'] ?? [],
             'form_id' => $formId,
             'hash' => $hash,
         ];

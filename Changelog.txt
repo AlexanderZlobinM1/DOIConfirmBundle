@@ -1,5 +1,8 @@
 # CHANGELOG
 
+- 2.1.0: DOI form actions can optionally send a selected Mautic owner/user
+  notification only after final DOI confirmation. The owner email fields stay
+  hidden while the checkbox is off.
 - 2.0.13: Inactive DoiReport lifecycle now hides DOI from new form action choices,
   preserves existing DOI actions as disabled builder rows, and keeps disabled
   runtime fail-closed without losing saved form action settings.

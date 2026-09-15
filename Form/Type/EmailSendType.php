@@ -18,6 +18,7 @@ use Mautic\EmailBundle\Form\Type\EmailListType;
 use Mautic\LeadBundle\Form\Type\TagType;
 use Mautic\LeadBundle\Form\Type\LeadListType;
 use Symfony\Component\Form\Extension\Core\Type\ButtonType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -320,6 +321,25 @@ class EmailSendType extends AbstractType
                     ],
                     'constraints' => [
                     ],
+                ]
+            );
+
+            $builder->add(
+                'send_owner_email',
+                CheckboxType::class,
+                [
+                    'label'    => 'jw.mautic.email.form.action.sendemail.owner.after_doi',
+                    'required' => false,
+                    'data'     => !empty($options['data']['send_owner_email']),
+                ]
+            );
+
+            $builder->add(
+                'owner_email',
+                OwnerEmailType::class,
+                [
+                    'data'     => $options['data']['owner_email'] ?? [],
+                    'required' => false,
                 ]
             );
     

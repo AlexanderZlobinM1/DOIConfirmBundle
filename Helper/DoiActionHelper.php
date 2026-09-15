@@ -40,7 +40,9 @@ class DoiActionHelper {
 
     private LoggerInterface $logger;
 
-    public function __construct($eventDispatcher, $ipLookupHelper, $pageModel, $emailModel, $auditLogModel, $leadModel, RequestStack $requestStack, PluginEnabledResolver $pluginEnabledResolver, LoggerInterface $logger)
+    private $sendEmailToUser;
+
+    public function __construct($eventDispatcher, $ipLookupHelper, $pageModel, $emailModel, $auditLogModel, $leadModel, RequestStack $requestStack, PluginEnabledResolver $pluginEnabledResolver, LoggerInterface $logger, $sendEmailToUser = null)
     {
         $this->eventDispatcher = $eventDispatcher;
         $this->ipLookupHelper = $ipLookupHelper;
@@ -52,6 +54,7 @@ class DoiActionHelper {
         $this->request = $requestStack->getCurrentRequest();
         $this->pluginEnabledResolver = $pluginEnabledResolver;
         $this->logger = $logger;
+        $this->sendEmailToUser = $sendEmailToUser;
     }
 
     public function setRequest(?Request $request): void
@@ -101,10 +104,43 @@ class DoiActionHelper {
             $this->identifyLead($config['lead_id']);
             $this->trackPageHit($config);
             $this->fireWebhook($config);
+            $this->sendOwnerEmailAfterConfirmation($config);
         } finally {
             if ($pushedRequest) {
                 $this->requestStack->pop();
             }
+        }
+    }
+
+    private function sendOwnerEmailAfterConfirmation($config): void
+    {
+        if (empty($config['sendOwnerEmail']) || empty($config['ownerEmail']) || !$this->sendEmailToUser) {
+            return;
+        }
+
+        $ownerEmailConfig = $config['ownerEmail'];
+        if (empty($ownerEmailConfig['useremail']['email']) || empty($ownerEmailConfig['user_id'])) {
+            $this->logger->warning('DOI owner email after confirmation is enabled but not fully configured.', [
+                'lead_id' => $config['lead_id'] ?? null,
+                'hash'    => $config['hash'] ?? null,
+            ]);
+
+            return;
+        }
+
+        $lead = $this->leadModel->getEntity($config['lead_id']);
+        if (!$lead) {
+            return;
+        }
+
+        try {
+            $this->sendEmailToUser->sendEmailToUsers($ownerEmailConfig, $lead);
+        } catch (\Throwable $exception) {
+            $this->logger->warning('DOI owner email after confirmation failed; DOI success actions already completed.', [
+                'lead_id'   => $config['lead_id'] ?? null,
+                'hash'      => $config['hash'] ?? null,
+                'exception' => $exception,
+            ]);
         }
     }
 

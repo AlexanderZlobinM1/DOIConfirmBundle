@@ -1,6 +1,6 @@
-# DOIConfirmBundle 2.0.13: руководство оператора
+# DOIConfirmBundle 2.1.0: руководство оператора
 
-Документ описывает canonical plugin source `DOIConfirmBundle` версии `2.0.13`
+Документ описывает canonical plugin source `DOIConfirmBundle` версии `2.1.0`
 для Mautic 5.x, 6.x и 7.x, включая проверенный сценарий Mautic 7.1.3.
 Live-установку, demo-цепочку и приемку на `news.show-master.ru` выполняет
 SalesSnap-Operation. Этот репозиторий содержит только source, документацию и
@@ -15,6 +15,8 @@ plugin-owned compatibility evidence.
 ссылкой, а после клика плагин применяет настроенные действия: добавляет или
 удаляет теги, добавляет или удаляет сегменты, обновляет поля контакта, снимает
 email DNC, пишет audit log, регистрирует page hit и отправляет webhook event.
+Опционально плагин может отправить выбранное письмо владельцу/пользователю
+только после финального DOI-подтверждения.
 
 Главный runtime-переключатель — `Active` у integration `Doi Report`. Когда
 integration выключена, новая DOI-action не видна в `Add a new submit action`.
@@ -71,6 +73,13 @@ mutations.
    `Update contact fields before successfull DOI`.
 7. Если email может быть сохранен не в основном поле контакта, заполните
    `Lead field alias for email (optional)`.
+8. Если владельцу задания нужно письмо только после финального подтверждения,
+   включите `Send owner email after DOI confirmation`. Пока галочка снята,
+   DOI-action выглядит как в версии 2.0.x. После включения появляются только
+   штатные поля Mautic из owner-email action: `Email to send`, кнопки
+   New/Edit/Preview Email и `Send email to user`. Не добавляйте отдельную
+   стандартную action отправки владельцу, если письмо не должно уходить до
+   DOI-click.
 
 Если UI отличается от скриншотов или перевода, ориентируйтесь на source keys и
 storage names:
@@ -86,6 +95,8 @@ storage names:
 | Обновить поля после успеха | `jw.mautic.form.action.lead_field_update` | `lead_field_update` |
 | Обновить поля до отправки DOI email | `jw.mautic.form.action.lead_field_update_before` | `lead_field_update_before` |
 | Альтернативное поле email | `jw.mautic.form.action.alternative_email_field` | `alternative_email_field` |
+| Включить письмо владельцу после DOI | `jw.mautic.email.form.action.sendemail.owner.after_doi` | `send_owner_email` |
+| Настройки письма владельцу после DOI | native Mautic email/user labels | `owner_email` |
 
 ## Tokens
 
@@ -140,6 +151,10 @@ bot-trap marker. Если marker существует, он удаляется, 
 7. Contact identification event `LeadEvents::ON_CLICKTHROUGH_IDENTIFICATION`.
 8. Page hit через `PageModel::hitPage()`.
 9. Webhook event `doi.successful`.
+10. Если включено `Send owner email after DOI confirmation`, отправляет
+    выбранное owner/user письмо через штатный Mautic email action service.
+    Ошибка этой отправки логируется warning и не откатывает уже примененные
+    DOI success actions.
 
 Начиная с версии `2.0.3`, исходный confirmation-click request временно возвращается в
 Mautic `RequestStack` на время success actions. Это важно для Mautic 7.1.3:
@@ -178,7 +193,7 @@ instance, не plugin source task.
 
 Быстрые проверки без изменения Mautic core:
 
-1. Убедиться, что plugin version в Mautic registry равен `2.0.13`.
+1. Убедиться, что plugin version в Mautic registry равен `2.1.0`.
 2. Убедиться, что `/s/plugins/config/DoiReport` открывается не 404, а обычной
    страницей настройки integration.
 3. Убедиться, что integration `Doi Report` active.
@@ -213,6 +228,11 @@ instance, не plugin source task.
 14. Проверить цикл `Active=No -> Active=Yes -> Active=No`: без reinstall и без
     потери настроек существующая DOI-action снова становится обычной при
     включении и снова preserved/disabled при выключении.
+15. При выключенной галочке `Send owner email after DOI confirmation` убедиться,
+    что дополнительные owner-email поля не отображаются.
+16. При включенной галочке выбрать `Email to send` и пользователей в
+    `Send email to user`, пройти DOI-flow и убедиться, что owner/user письмо
+    отправлено только после финального клика по `{doi_url}`.
 
 Safe cleanup для test DOI:
 
@@ -234,8 +254,8 @@ cache rebuild — отдельная operational operation.
 Rollback live instance выполняет SalesSnap-Operation штатным MCC/MCD путем.
 Plugin source contract для rollback:
 
-1. Предыдущий опубликованный tag: `v2.0.12`.
-2. Текущий опубликованный tag: `v2.0.13`.
+1. Предыдущий опубликованный tag: `v2.0.13`.
+2. Текущий опубликованный tag: `v2.1.0`.
 3. Bundle directory: `plugins/DOIConfirmBundle`.
 4. Runtime state хранится в Mautic form action config, integration settings,
    contacts, DNC, audit log и webhook queue; plugin rollback не должен purge
@@ -245,9 +265,9 @@ Plugin source contract для rollback:
 6. Если async Messenger был настроен для `DoiConfirmationMessage`, worker и
    queue state проверяются отдельно владельцем instance.
 
-## Проверка v2.0.13 для Mautic 7.x
+## Проверка v2.1.0 для Mautic 7.x
 
-Проверка source выполнена на tag `v2.0.13`:
+Проверка source выполнена на tag `v2.1.0`:
 
 - integration discovery aligned: `Integration/DoiReportIntegration.php`,
   service id `mautic.integration.doireport`, object name `DoiReport`;
@@ -266,6 +286,10 @@ Plugin source contract для rollback:
   applies confirmed tags/segments idempotently;
 - pending tag/segment assignment before DOI email is best-effort; a warning is
   logged if it fails, and email dispatch continues;
+- optional owner/user email settings are hidden while unchecked and render only
+  native Mautic email/user fields when enabled;
+- owner/user notification dispatch runs after final DOI confirmation and is
+  skipped when the checkbox is not enabled;
 - expected Plugins UI config route: `/s/plugins/config/DoiReport`;
 - public routes остались `/doi/{enc}` и `/nothuman/{hash}`;
 - tokens остались `{doi_url}` и `{doi_nothuman}`;

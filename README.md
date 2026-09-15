@@ -18,6 +18,11 @@ actions continue and the tracking failure is logged. Delayed confirmations add
 an in-memory session to synthetic requests when Mautic listeners require
 `RequestStack::getSession()`.
 
+The DOI form action can also send a selected owner/user notification only after
+final DOI confirmation. Leave `Send owner email after DOI confirmation`
+unchecked to keep the 2.0.x action form unchanged; enable it to reveal Mautic's
+native owner email select and user selector fields.
+
 ![doi-confirm-plugin-form-action](https://user-images.githubusercontent.com/1366934/138834788-d4a7a685-d15e-4d95-9436-0623e3dbc287.png)
 
 ## What is the plugin for?
@@ -28,6 +33,7 @@ In short: It helps you to implement a simple and reliable method to collect opt-
 - Automatically sends a confirmation email when the contact has not opted in yet
 - Tracks the click on confirmation link safely
 - Adds / removes tags and segments in case of successfull confirmation
+- Optional owner/user notification after final DOI confirmation
 
 
 ## Features

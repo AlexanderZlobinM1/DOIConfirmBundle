@@ -120,3 +120,17 @@ action key, with the normal `EmailSendType` and storage keys intact. This lets
 Mautic load the existing action into the builder session and save the form
 without silently dropping DOI configuration. The disabled builder row has no
 edit/delete action controls and runtime handlers remain fail-closed.
+
+## Patch note for 2.1.0
+
+The DOI form action now has an optional post-confirmation owner notification.
+When `send_owner_email` is not enabled, the action form keeps the same visible
+shape as the 2.0.x series. When enabled, the action renders a nested
+`owner_email` configuration with only Mautic's native email select/buttons and
+user selector fields. These settings are stored in the encrypted DOI payload
+created on initial form submit, but the plugin does not send this owner/user
+email until the contact completes final DOI confirmation. Delivery uses
+Mautic's `mautic.email.model.send_email_to_user` service after DOI success
+actions have completed; failures are logged as warnings and do not roll back
+confirmed tags, segments, field updates, DNC removal, audit, tracking or
+webhook dispatch.

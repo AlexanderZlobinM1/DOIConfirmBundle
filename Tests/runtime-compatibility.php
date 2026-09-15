@@ -191,6 +191,8 @@ try {
         'lead_field_update',
         'lead_field_update_before',
         'alternative_email_field',
+        'send_owner_email',
+        'owner_email',
     ];
     foreach ($expectedFields as $field) {
         if (!$propertiesBuilder->has($field)) {
@@ -199,6 +201,11 @@ try {
     }
     echo 'ACTION jw.email.send.lead disabled-existing '.($doiAction['label'] ?? '').PHP_EOL;
     echo 'ACTION_FIELDS '.implode(',', $expectedFields).PHP_EOL;
+    $ownerEmailBuilder = $propertiesBuilder->get('owner_email');
+    if (!$ownerEmailBuilder->has('useremail') || !$ownerEmailBuilder->has('user_id')) {
+        throw new RuntimeException('DOI owner email properties did not register useremail and user_id fields.');
+    }
+    echo 'OWNER_EMAIL_FIELDS useremail,user_id'.PHP_EOL;
     echo 'PASS '.$bundle.' Mautic '.$kernel->getVersion().' PHP '.PHP_VERSION.PHP_EOL;
 } catch (Throwable $exception) {
     fwrite(STDERR, get_class($exception).': '.$exception->getMessage().PHP_EOL);

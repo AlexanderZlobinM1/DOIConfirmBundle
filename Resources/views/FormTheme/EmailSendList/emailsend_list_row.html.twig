@@ -26,5 +26,44 @@
     {% endif %}
 </div>
 
+{% if form.send_owner_email is defined and form.owner_email is defined %}
+    {{ form_row(form.send_owner_email) }}
+    <div id="{{ form.owner_email.vars.id }}_container" class="doi-owner-email-fields">
+        <div class="row">
+            <div class="col-xs-12">
+                {{ form_row(form.owner_email.useremail.email) }}
+                <div class="mb-lg d-flex">
+                    {{ form_row(form.owner_email.useremail.newEmailButton) }}
+                    {{ form_row(form.owner_email.useremail.editEmailButton) }}
+                    {{ form_row(form.owner_email.useremail.previewEmailButton) }}
+                </div>
+            </div>
+        </div>
+        {{ form_row(form.owner_email.user_id) }}
+    </div>
+    {% do form.owner_email.useremail.setRendered() %}
+    {% do form.owner_email.setRendered() %}
+    <script>
+        (function () {
+            var checkbox = document.getElementById('{{ form.send_owner_email.vars.id|e('js') }}');
+            var fields = document.getElementById('{{ (form.owner_email.vars.id ~ '_container')|e('js') }}');
+
+            function toggleOwnerEmailFields() {
+                if (!checkbox || !fields) {
+                    return;
+                }
+
+                fields.style.display = checkbox.checked ? '' : 'none';
+            }
+
+            if (checkbox) {
+                checkbox.addEventListener('change', toggleOwnerEmailFields);
+            }
+
+            toggleOwnerEmailFields();
+        }());
+    </script>
+{% endif %}
+
 {{ form_rest(form) }}
 {% endblock %}

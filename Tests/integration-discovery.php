@@ -256,6 +256,16 @@ final class DoiTestLeadModel
     }
 }
 
+final class DoiTestSendEmailToUser
+{
+    public array $calls = [];
+
+    public function sendEmailToUsers(array $config, Mautic\LeadBundle\Entity\Lead $lead): void
+    {
+        $this->calls[] = [$config, $lead->getId()];
+    }
+}
+
 function doi_test_enabled_resolver(): MauticPlugin\DOIConfirmBundle\Service\PluginEnabledResolver
 {
     return new MauticPlugin\DOIConfirmBundle\Service\PluginEnabledResolver(
@@ -557,8 +567,64 @@ if ([] !== $syncLogger->records) {
     throw new RuntimeException('Synchronous DOI page-hit tracking logged an unexpected warning.');
 }
 
+$ownerEmailRequestStack = new Symfony\Component\HttpFoundation\RequestStack();
+$ownerEmailDispatcher = new DoiTestEventDispatcher();
+$ownerEmailPageModel = new DoiTestPageModel(false);
+$ownerEmailEmailModel = new DoiTestEmailModel();
+$ownerEmailAuditLogModel = new DoiTestAuditLogModel();
+$ownerEmailLeadModel = new DoiTestLeadModel();
+$ownerEmailLogger = new DoiTestLogger();
+$ownerEmailSender = new DoiTestSendEmailToUser();
+$ownerEmailHelper = new MauticPlugin\DOIConfirmBundle\Helper\DoiActionHelper(
+    $ownerEmailDispatcher,
+    new DoiTestIpLookupHelper(),
+    $ownerEmailPageModel,
+    $ownerEmailEmailModel,
+    $ownerEmailAuditLogModel,
+    $ownerEmailLeadModel,
+    $ownerEmailRequestStack,
+    doi_test_enabled_resolver(),
+    $ownerEmailLogger,
+    $ownerEmailSender
+);
+$ownerEmailConfig = array_merge(doi_test_action_config(), [
+    'sendOwnerEmail' => true,
+    'ownerEmail' => [
+        'useremail' => ['email' => 19],
+        'user_id' => [1, 2],
+    ],
+]);
+$ownerEmailHelper->applyDoiActions($ownerEmailConfig);
+if ([[['useremail' => ['email' => 19], 'user_id' => [1, 2]], 91]] !== $ownerEmailSender->calls) {
+    throw new RuntimeException('DOI confirmation did not send configured owner email after success.');
+}
+$ownerEmailDisabledSender = new DoiTestSendEmailToUser();
+$ownerEmailDisabledHelper = new MauticPlugin\DOIConfirmBundle\Helper\DoiActionHelper(
+    new DoiTestEventDispatcher(),
+    new DoiTestIpLookupHelper(),
+    new DoiTestPageModel(false),
+    new DoiTestEmailModel(),
+    new DoiTestAuditLogModel(),
+    new DoiTestLeadModel(),
+    new Symfony\Component\HttpFoundation\RequestStack(),
+    doi_test_enabled_resolver(),
+    new DoiTestLogger(),
+    $ownerEmailDisabledSender
+);
+$ownerEmailDisabledHelper->applyDoiActions(array_merge(doi_test_action_config(), [
+    'sendOwnerEmail' => false,
+    'ownerEmail' => [
+        'useremail' => ['email' => 19],
+        'user_id' => [1, 2],
+    ],
+]));
+if ([] !== $ownerEmailDisabledSender->calls) {
+    throw new RuntimeException('DOI confirmation sent owner email while the owner-email checkbox was disabled.');
+}
+
 echo 'DISCOVERY DoiReport mautic.integration.doireport'.PHP_EOL;
 echo 'RESOLVER missing=false disabled=false enabled=true duplicate-active=true normalization=idempotent'.PHP_EOL;
 echo 'FORM_BUILDER active-action=normal disabled-new=hidden disabled-existing=preserved'.PHP_EOL;
 echo 'DOI_ACTIONS delayed-sessionless=ok delayed-tracking-failure=nonfatal sync-session=ok sync-tracking=ok'.PHP_EOL;
+echo 'OWNER_EMAIL after-confirmation=ok unchecked=skipped'.PHP_EOL;
 echo 'PASS DOI integration discovery'.PHP_EOL;

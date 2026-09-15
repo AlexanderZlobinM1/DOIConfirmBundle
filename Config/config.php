@@ -38,7 +38,7 @@ $defaultIntegrationArguments = array_merge(
 return [
     'name'        => 'DOI Confirm Bundle',
     'description' => 'Adds a robust and flexible way to add a double-opt-in process (DOI) to any form in Mautic.',
-    'version'     => '2.0.13',
+    'version'     => '2.1.0',
     'author'      => 'Alexander Zlobin',
     'services' => [
         'events' => [
@@ -97,6 +97,9 @@ return [
                 'class'     => \MauticPlugin\DOIConfirmBundle\Form\Type\EmailSendType::class,
                 'arguments' => ['router', 'translator'],
             ],
+            'jw.mautic.form.type.jw_doi_owner_email' => [
+                'class'     => \MauticPlugin\DOIConfirmBundle\Form\Type\OwnerEmailType::class,
+            ],
         ],
         'helpers' => [
             'jw.doi.plugin_enabled_resolver' => [
@@ -105,7 +108,7 @@ return [
             ],
             'jw.doi.actionhelper' => [
                 'class'     => \MauticPlugin\DOIConfirmBundle\Helper\DoiActionHelper::class,
-                'arguments' => ['event_dispatcher', 'mautic.helper.ip_lookup', 'mautic.page.model.page', 'mautic.email.model.email', 'mautic.core.model.auditlog', 'mautic.lead.model.lead', 'request_stack', 'jw.doi.plugin_enabled_resolver', 'monolog.logger.mautic'],
+                'arguments' => ['event_dispatcher', 'mautic.helper.ip_lookup', 'mautic.page.model.page', 'mautic.email.model.email', 'mautic.core.model.auditlog', 'mautic.lead.model.lead', 'request_stack', 'jw.doi.plugin_enabled_resolver', 'monolog.logger.mautic', 'mautic.email.model.send_email_to_user'],
             ],
             'jw.doi.nothumanclickhelper' => [
                 'class'     => \MauticPlugin\DOIConfirmBundle\Helper\NotHumanClickHelper::class,

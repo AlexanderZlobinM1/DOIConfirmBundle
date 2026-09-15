@@ -1,5 +1,19 @@
 # Changelog
 
+## 2.1.0 - 2026-09-15
+
+- Add an optional `Send owner email after DOI confirmation` checkbox to the DOI
+  form action.
+- Keep the 2.0.x DOI action UI unchanged while the checkbox is off; when it is
+  enabled, show only the native Mautic owner notification fields: `Email to
+  send`, email create/edit/preview buttons, and `Send email to user`.
+- Send the selected owner/user notification only after the contact completes
+  final DOI confirmation, using Mautic's native `SendEmailToUser` model.
+- Keep owner notification delivery best-effort after DOI success actions, so a
+  notification failure is logged without rolling back confirmation state.
+- Extend Mautic 6/7 DB-free coverage and Mautic 7.2 runtime form coverage for
+  the conditional owner-email fields and post-confirmation dispatch.
+
 ## 2.0.13 - 2026-09-15
 
 - Keep Mautic's native `Doi Report` Active switch as the runtime lifecycle
