@@ -1,5 +1,18 @@
 # Changelog
 
+## 3.0.2 - 2026-09-15
+
+- Register the documentation controller and locale resolver through Mautic's
+  plugin `Config/config.php` service contract instead of the bundle-local
+  `Config/services.php` file that is not loaded for installed plugins.
+- Supply the complete inherited `CommonController` constructor dependencies,
+  including the additional Mautic 5 factory argument, and retain controller
+  action argument resolution for the locale resolver.
+- Add regression coverage for full admin HTML, AJAX rendering, locale
+  selection, non-admin 403 handling and Mautic's controller service compiler.
+- Preserve the native integration form, Active switch, DOI runtime behavior,
+  documentation content and one-line Sales Snap footer unchanged.
+
 ## 3.0.1 - 2026-09-15
 
 - Restore Mautic's complete native integration form, including the `Active`

@@ -13,6 +13,7 @@ Run the DB-free localized documentation and catalog checks with:
 ```sh
 php Tests/documentation.php
 php Tests/translation-catalogs.php
+MAUTIC_VENDOR=/path/to/mautic/vendor php Tests/documentation-services.php
 ```
 
 The test compiles an isolated container, instantiates this plugin’s integrations
@@ -226,3 +227,22 @@ the runtime `Active` switch. The integration now retains
 `@MauticPlugin/Integration/form.html.twig` and contributes only the
 documentation button via the native `getFormNotes('custom')` extension point.
 No DOI runtime, storage, route or documentation-page behavior changed.
+
+## Patch note for 3.0.2
+
+3.0.2 registers `DocumentationController` and
+`DocumentationLocaleResolver` in the legacy plugin service map inside
+`Config/config.php`, which Mautic 5, 6 and 7 process through `ServicePass`.
+The controller receives all inherited `CommonController` constructor
+dependencies: ten on Mautic 5 and nine on Mautic 6/7. It is tagged with
+`controller.service_arguments`, so Symfony resolves the locale resolver used
+by `indexAction()`. The unused plugin-local `Config/services.php` definition
+was removed.
+
+Controller tests cover full admin HTML, AJAX JSON, locale selection and the
+non-admin 403 path. The service-wiring regression runs the real Mautic 7.2
+plugin `ServicePass` and Symfony controller argument-locator pass while
+simulating the constructor branches for 5.2.10, 6.0.9, 7.1.3 and 7.2.0.
+This is plugin-owned DB-free evidence, not live HTTP acceptance on those exact
+instances. The native integration form, Active switch, DOI state transitions,
+public confirmation routes and one-line Sales Snap footer are unchanged.

@@ -1,7 +1,11 @@
 <?php
 
+use Mautic\CoreBundle\Controller\CommonController;
 use Mautic\CoreBundle\Helper\AppVersion;
+use Mautic\CoreBundle\Service\FlashBag;
 use MauticPlugin\DOIConfirmBundle\Controller\DocumentationController;
+use MauticPlugin\DOIConfirmBundle\Service\DocumentationLocaleResolver;
+use Symfony\Component\DependencyInjection\Reference;
 
 $mauticVersion = (int) (new AppVersion())->getVersion();
 
@@ -36,10 +40,46 @@ $defaultIntegrationArguments = array_merge(
     ]
 );
 
+$documentationControllerArguments = [
+    'doctrine',
+];
+
+if ($mauticVersion < 6) {
+    $documentationControllerArguments[] = 'mautic.factory';
+}
+
+$documentationControllerArguments = array_merge(
+    $documentationControllerArguments,
+    [
+        'mautic.model.factory',
+        'mautic.helper.user',
+        'mautic.helper.core_parameters',
+        'event_dispatcher',
+        'translator',
+        new Reference(FlashBag::class),
+        'request_stack',
+        'mautic.security',
+    ]
+);
+
+$documentationControllerMethodCalls = [
+    'setContainer' => ['service_container'],
+];
+
+if (method_exists(CommonController::class, 'autowireCommonController')) {
+    $documentationControllerMethodCalls['autowireCommonController'] = [
+        'mautic.page.model.page',
+        'mautic.core.model.notification',
+        'router',
+        'http_kernel',
+        'twig',
+    ];
+}
+
 return [
     'name'        => 'DOI Confirm Bundle',
     'description' => 'Adds a robust and flexible way to add a double-opt-in process (DOI) to any form in Mautic.',
-    'version'     => '3.0.1',
+    'version'     => '3.0.2',
     'author'      => 'Alexander Zlobin',
     'services' => [
         'events' => [
@@ -80,6 +120,9 @@ return [
             ],
         ],
         'other' => [
+            DocumentationLocaleResolver::class => [
+                'class' => DocumentationLocaleResolver::class,
+            ],
             'jw.mautic.doi.message_handler' => [
                 'class'     => \MauticPlugin\DOIConfirmBundle\MessageHandler\DoiConfirmationMessageHandler::class,
                 'arguments' => [
@@ -91,6 +134,13 @@ return [
                 'tags' => [
                     'messenger.message_handler',
                 ],
+            ],
+        ],
+        'controllers' => [
+            DocumentationController::class => [
+                'class'       => DocumentationController::class,
+                'arguments'   => $documentationControllerArguments,
+                'methodCalls' => $documentationControllerMethodCalls,
             ],
         ],
         'forms' => [

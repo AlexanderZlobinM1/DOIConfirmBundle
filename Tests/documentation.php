@@ -60,6 +60,7 @@ $index = file_get_contents($root.'/Resources/views/Documentation/index.html.twig
 $integration = file_get_contents($root.'/Resources/views/Integration/form.html.twig');
 $controller = file_get_contents($root.'/Controller/DocumentationController.php');
 $config = file_get_contents($root.'/Config/config.php');
+$legacyServices = $root.'/Config/services.php';
 $integrationClass = file_get_contents($root.'/Integration/DoiReportIntegration.php');
 if (false === $index || false === $integration || false === $controller || false === $config || false === $integrationClass) {
     throw new RuntimeException('Documentation shell files could not be read.');
@@ -71,6 +72,9 @@ foreach ([
     [$controller, '$request->getLocale()'],
     [$config, "'doiconfirm_documentation'"],
     [$config, "'method'     => ['GET']"],
+    [$config, "'controllers' => ["],
+    [$config, 'DocumentationLocaleResolver::class'],
+    [$config, "'setContainer' => ['service_container']"],
     [$integrationClass, "if ('custom' === \$section)"],
     [$integrationClass, "'template'   => '@DOIConfirm/Integration/form.html.twig'"],
     [$integrationClass, 'return parent::getFormNotes($section)'],
@@ -78,6 +82,9 @@ foreach ([
     if (!str_contains($haystack, $needle)) {
         throw new RuntimeException(sprintf('Documentation wiring is missing %s.', $needle));
     }
+}
+if (is_file($legacyServices)) {
+    throw new RuntimeException('Documentation services must use Mautic plugin Config/config.php, not an unloaded Config/services.php.');
 }
 if (str_contains($integrationClass, 'function getFormTemplate')) {
     throw new RuntimeException('DOI must not replace Mautic native integration form or hide its Active switch.');

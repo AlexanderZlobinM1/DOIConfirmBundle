@@ -1,17 +1,20 @@
 # Compatibility index
 
-Last synchronized from confirmed workspace evidence and 3.0.1 native integration-form restoration: 15 September 2026.
+Last synchronized from confirmed workspace evidence and 3.0.2 documentation-controller service repair: 15 September 2026.
 
-Current release: `3.0.1` (`v3.0.1`). Declared support: Mautic 5.x, 6.x, 7.x; PHP >=8.1 <8.5.
+Current release: `3.0.2` (`v3.0.2`). Declared support: Mautic 5.x, 6.x, 7.x; PHP >=8.1 <8.5.
 
 | Mautic | Status | Confirmed scope |
 | --- | --- | --- |
-| 5.2.10 | ✓ | Fresh container, integration and form checks, 6 Sep 2026 |
-| 6.0.9 | ✓ | Fresh container, integration and form checks, 6 Sep 2026; 3.0.1 DB-free regression requires Mautic's native integration form/Active switch and appends only the documentation form note; 3.0.0 documentation and 2.1.7 runtime evidence retained, 15 Sep 2026 |
-| 7.1.3 | ✓ | Fresh container, integration and form checks, 6 Sep 2026; 2.0.12 DB-free DOI pending-state non-fatal regression, retained 2.0.11 pending-to-confirmed state-transition regression, translation catalog parity for ru/ru_RU/sr_RS plus retained source-API audit for Mautic 7.1.3 no-session delayed DOI requests, page-hit fallback, integration discovery and duplicate DoiReport resolver normalization, 15 Sep 2026 |
-| 7.2.0 | ✓ | Fresh container, integration and form checks, 6 Sep 2026; 3.0.1 DB-free regression requires Mautic's native integration form/Active switch and appends only the documentation form note; 3.0.0 documentation and 2.1.7 runtime evidence retained, 15 Sep 2026 |
+| 5.2.10 | ✓ | Fresh container, integration and form checks retained from 6 Sep 2026; 3.0.2 DB-free service-map branch verifies ten inherited controller arguments; exact 3.0.2 runtime NOT RUN |
+| 6.0.9 | ✓ | Fresh container, integration and form checks retained from 6 Sep 2026; 3.0.2 DB-free service-map branch verifies nine inherited controller arguments; exact 3.0.2 runtime NOT RUN |
+| 7.1.3 | ✓ | Fresh container/integration/form evidence retained from 6 Sep 2026 and prior DOI regressions retained; 3.0.2 DB-free service-map branch verifies nine inherited controller arguments plus action-locator wiring; exact 3.0.2 runtime NOT RUN |
+| 7.2.0 | ✓ | Fresh container/integration/form and 2.1.7 runtime HTML evidence retained; 3.0.2 uses the actual 7.2 ServicePass and controller argument-locator pass, with controller full/AJAX/403 unit checks |
 
-3.0.1 retains the admin-only documentation introduced in 3.0.0 but restores
+3.0.2 fixes the documentation route's controller registration through the
+Mautic plugin service compiler. It preserves the native form restoration from
+3.0.1 and the localized help introduced in 3.0.0. 3.0.1 retains the
+admin-only documentation introduced in 3.0.0 but restores
 Mautic's complete native integration form and `Active` switch. The settings
 page receives only one standard documentation button through custom form notes.
 3.0.0 added an admin-only built-in documentation route and a localized link in

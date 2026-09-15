@@ -1,5 +1,8 @@
 # CHANGELOG
 
+- 3.0.2: Fixed the built-in documentation HTTP 500 by registering its
+  controller and locale resolver through Mautic's plugin service compiler,
+  with inherited controller dependencies for Mautic 5, 6 and 7.
 - 3.0.1: Restored Mautic's native integration form and Active switch; the
   documentation is now added as a standard button through form notes, with the
   standard Sales Snap maintainer footer.
