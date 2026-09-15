@@ -1,5 +1,7 @@
 # CHANGELOG
 
+- 2.1.7: Added translated purpose headings and detailed Mautic tooltips for the
+  contact confirmation email and post-confirmation owner notification.
 - 2.1.6: Primary email and the complete owner section now subtract one Mautic
   grid gutter, aligning every field with tags, segments and text inputs.
 - 2.1.5: Both email blocks render at the same Twig level and their native outer

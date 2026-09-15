@@ -16,6 +16,19 @@
     }
 </style>
 <div class="doi-native-email-controls doi-field-width">
+    <div class="mb-sm">
+        <span
+            class="control-label fw-b"
+            data-toggle="tooltip"
+            data-container="body"
+            data-placement="top"
+            title=""
+            data-original-title="{{ 'jw.mautic.email.form.action.doi_email.tooltip'|trans }}"
+        >
+            {{ 'jw.mautic.email.form.action.doi_email.title'|trans }}
+            <i class="ri-question-line"></i>
+        </span>
+    </div>
     {{ block('mautic_emailsend_list_row') }}
 </div>
 
@@ -27,6 +40,19 @@
         class="doi-owner-email-fields doi-field-width{% if not ownerEnabled %} hide{% endif %}"
         {% if not ownerEnabled %}hidden style="display:none"{% endif %}
     >
+        <div class="mb-sm">
+            <span
+                class="control-label fw-b"
+                data-toggle="tooltip"
+                data-container="body"
+                data-placement="top"
+                title=""
+                data-original-title="{{ 'jw.mautic.email.form.action.owner_email.tooltip'|trans }}"
+            >
+                {{ 'jw.mautic.email.form.action.owner_email.title'|trans }}
+                <i class="ri-question-line"></i>
+            </span>
+        </div>
         <div class="doi-native-email-controls">
             {% with {'form': form.owner_email.useremail} %}
                 {{ block('mautic_emailsend_list_row') }}

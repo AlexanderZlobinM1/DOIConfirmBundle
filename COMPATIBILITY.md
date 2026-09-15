@@ -190,3 +190,12 @@ complete owner section by exactly that one gutter. The owner email and user
 selector inherit the owner section width together, avoiding cumulative nested
 subtractions. Their right edges therefore match tags, segments, URLs and text
 fields while native email rendering remains unchanged.
+
+## Patch note for 2.1.7
+
+2.1.7 leaves Mautic's native `Email to send` labels and controls unchanged, but
+adds a translated purpose heading before each email block. Standard Mautic
+question icons expose hover tooltips that distinguish the immediate DOI request
+sent to the contact from the owner notification sent only after successful
+confirmation. The tooltips also document the `{doi_url}` requirement and the
+selected Mautic user recipients.

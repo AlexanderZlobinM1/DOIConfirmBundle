@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.1.7 - 2026-09-15
+
+- Add distinct purpose headings above the primary DOI confirmation email and
+  the post-confirmation owner notification while retaining Mautic's native
+  `Email to send` labels.
+- Add standard Mautic hover tooltips explaining recipients, send timing,
+  `{doi_url}` usage and why the owner notification is not sent on initial form
+  submission.
+- Translate the new headings and detailed tooltips in all shipped locales.
+
 ## 2.1.6 - 2026-09-15
 
 - Constrain the primary email controls and the complete owner-email section by

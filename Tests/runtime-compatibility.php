@@ -289,8 +289,19 @@ try {
     if (!str_contains($renderedProperties, "document.getElementById(&#039;formaction_properties_owner_email_container&#039;)")) {
         throw new RuntimeException('Owner email checkbox did not receive its direct visibility toggle.');
     }
+    foreach ([
+        'DOI confirmation email',
+        'Owner notification after confirmation',
+        'data-original-title="Select the email template sent to the contact immediately after form submission.',
+        'data-original-title="Select the email template sent to the Mautic users below only after the contact successfully confirms',
+    ] as $emailPurposeMarkup) {
+        if (!str_contains($renderedProperties, $emailPurposeMarkup)) {
+            throw new RuntimeException(sprintf('Email purpose title or tooltip is missing from rendered form: %s', $emailPurposeMarkup));
+        }
+    }
     echo 'OWNER_EMAIL_FIELDS useremail,user_id'.PHP_EOL;
     echo 'OWNER_EMAIL_LAYOUT native-shared standard-field-width hidden-when-unchecked'.PHP_EOL;
+    echo 'EMAIL_PURPOSE_TITLES primary,owner tooltips=present'.PHP_EOL;
     echo 'PASS '.$bundle.' Mautic '.$kernel->getVersion().' PHP '.PHP_VERSION.PHP_EOL;
 } catch (Throwable $exception) {
     fwrite(STDERR, get_class($exception).': '.$exception->getMessage().PHP_EOL);
