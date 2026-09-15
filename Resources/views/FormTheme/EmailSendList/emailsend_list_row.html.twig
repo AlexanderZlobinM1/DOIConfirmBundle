@@ -10,8 +10,12 @@
         padding-left: 0 !important;
         padding-right: 0 !important;
     }
+    .doi-field-width {
+        box-sizing: border-box;
+        width: calc(100% - 30px);
+    }
 </style>
-<div class="doi-native-email-controls">
+<div class="doi-native-email-controls doi-field-width">
     {{ block('mautic_emailsend_list_row') }}
 </div>
 
@@ -20,7 +24,7 @@
     {{ form_row(form.send_owner_email) }}
     <div
         id="{{ form.owner_email.vars.id }}_container"
-        class="doi-owner-email-fields{% if not ownerEnabled %} hide{% endif %}"
+        class="doi-owner-email-fields doi-field-width{% if not ownerEnabled %} hide{% endif %}"
         {% if not ownerEnabled %}hidden style="display:none"{% endif %}
     >
         <div class="doi-native-email-controls">

@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.1.6 - 2026-09-15
+
+- Constrain the primary email controls and the complete owner-email section by
+  one 30px Mautic grid gutter, matching the right edge of normal action fields.
+- Apply that constraint once per section so the owner email and user selector
+  remain equal instead of accumulating nested gutter widths.
+
 ## 2.1.5 - 2026-09-15
 
 - Render both native email blocks directly at the same Twig level instead of

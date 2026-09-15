@@ -180,3 +180,13 @@ row margins and column padding produced by that native block, matching both
 email selectors to ordinary full-width form fields such as the owner user,
 tags and segments selectors. All fields therefore share the same right edge
 without replacing Mautic's version-specific email controls or buttons.
+
+## Patch note for 2.1.6
+
+Mautic 5, 6 and 7 define the Bootstrap grid gutter as 30px. In the form action
+modal, custom property-row content spans one gutter beyond ordinary
+`form_row()` fields. Version 2.1.6 constrains the primary email wrapper and the
+complete owner section by exactly that one gutter. The owner email and user
+selector inherit the owner section width together, avoiding cumulative nested
+subtractions. Their right edges therefore match tags, segments, URLs and text
+fields while native email rendering remains unchanged.

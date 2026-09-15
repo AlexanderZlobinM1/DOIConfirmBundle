@@ -274,12 +274,17 @@ try {
     if (preg_match('/id="formaction_properties_owner_email_container"[^>]*class="[^"]*col-/', $renderedProperties)) {
         throw new RuntimeException('Owner email settings still have an extra grid column that offsets native fields and buttons.');
     }
-    if (2 !== substr_count($renderedProperties, 'class="doi-native-email-controls"')
-        || !str_contains($renderedProperties, '.doi-native-email-controls > .row')
+    if (2 !== substr_count($renderedProperties, 'class="doi-native-email-controls')
+        || !str_contains($renderedProperties, 'class="doi-native-email-controls doi-field-width"')) {
+        throw new RuntimeException('Primary and owner native email control wrappers were not rendered.');
+    }
+    if (!str_contains($renderedProperties, '.doi-native-email-controls > .row')
         || !str_contains($renderedProperties, 'margin-right: 0;')
         || !str_contains($renderedProperties, 'padding-right: 0 !important;')
+        || !str_contains($renderedProperties, 'width: calc(100% - 30px);')
+        || !str_contains($renderedProperties, 'class="doi-owner-email-fields doi-field-width hide"')
     ) {
-        throw new RuntimeException('Native email grid gutters were not normalized to the standard form field width.');
+        throw new RuntimeException('Email and owner controls were not constrained to the standard form field width.');
     }
     if (!str_contains($renderedProperties, "document.getElementById(&#039;formaction_properties_owner_email_container&#039;)")) {
         throw new RuntimeException('Owner email checkbox did not receive its direct visibility toggle.');
