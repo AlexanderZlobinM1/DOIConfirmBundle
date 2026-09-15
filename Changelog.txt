@@ -1,5 +1,7 @@
 # CHANGELOG
 
+- 2.1.2: Primary DOI confirmation email fields are now built by Mautic's native
+  EmailSendType; unchecked owner fields render hidden server-side.
 - 2.1.1: Primary DOI and owner email fields now reuse Mautic's native email
   button blocks; owner fields stay hidden while the checkbox is off.
 - 2.1.0: DOI form actions can optionally send a selected Mautic owner/user

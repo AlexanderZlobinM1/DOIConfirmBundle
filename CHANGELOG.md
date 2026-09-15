@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.1.2 - 2026-09-15
+
+- Build the primary DOI confirmation email selector/buttons with Mautic's
+  native `EmailSendType` instead of plugin-copied field definitions, so button
+  attributes and icons come from the installed Mautic version.
+- Keep the native Twig block reuse from 2.1.1 and make unchecked owner-email
+  settings hidden with server-rendered `hide`/`hidden` state plus the checkbox
+  toggle fallback.
+
 ## 2.1.1 - 2026-09-15
 
 - Render both the primary DOI email selector and the post-confirmation owner

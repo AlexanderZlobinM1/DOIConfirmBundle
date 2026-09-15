@@ -207,6 +207,10 @@ try {
             throw new RuntimeException(sprintf('DOI submit action properties field %s was not registered.', $field));
         }
     }
+    $newEmailButtonClass = $propertiesBuilder->get('newEmailButton')->getOption('attr')['class'] ?? '';
+    if (str_contains($newEmailButtonClass, 'btn-primary')) {
+        throw new RuntimeException('Primary DOI email buttons still use plugin-copied legacy markup instead of Mautic native button attributes.');
+    }
     echo 'ACTION jw.email.send.lead disabled-existing '.($doiAction['label'] ?? '').PHP_EOL;
     echo 'ACTION_FIELDS '.implode(',', $expectedFields).PHP_EOL;
     $ownerEmailBuilder = $propertiesBuilder->get('owner_email');

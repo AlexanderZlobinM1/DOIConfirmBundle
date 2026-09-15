@@ -145,3 +145,12 @@ selector/button Twig block instead of duplicating button markup in this plugin.
 The owner wrapper is hidden when `send_owner_email` is unchecked and is tied to
 the checkbox through Mautic's `data-show-on` condition plus a lightweight
 fallback listener.
+
+## Patch note for 2.1.2
+
+2.1.2 completes the native rendering correction. The primary DOI confirmation
+email controls are now added by Mautic's own `EmailSendType::buildForm()` rather
+than by plugin-copied field definitions, so button classes, icons, disabled
+state and version-specific attributes come from the installed Mautic version.
+The unchecked owner-email wrapper is also rendered hidden server-side with
+`hide`, `hidden` and `display:none`, then toggled by the checkbox fallback.

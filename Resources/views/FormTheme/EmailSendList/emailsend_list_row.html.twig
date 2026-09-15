@@ -13,9 +13,9 @@
     {{ form_row(form.send_owner_email) }}
     <div
         id="{{ form.owner_email.vars.id }}_container"
-        class="col-xs-12 doi-owner-email-fields"
+        class="col-xs-12 doi-owner-email-fields{% if not ownerEmailChecked %} hide{% endif %}"
         data-show-on='{"{{ form.send_owner_email.vars.id }}":"checked"}'
-        {% if not ownerEmailChecked %}style="display:none"{% endif %}
+        {% if not ownerEmailChecked %}hidden style="display:none"{% endif %}
     >
         {{ form_row(form.owner_email.useremail) }}
         {{ form_row(form.owner_email.user_id) }}
@@ -36,7 +36,15 @@
                     return;
                 }
 
-                fields.style.display = checkbox.checked ? '' : 'none';
+                if (checkbox.checked) {
+                    fields.hidden = false;
+                    fields.classList.remove('hide');
+                    fields.style.display = '';
+                } else {
+                    fields.hidden = true;
+                    fields.classList.add('hide');
+                    fields.style.display = 'none';
+                }
             }
 
             if (checkbox) {
