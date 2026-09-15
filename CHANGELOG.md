@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.0.12 - 2026-09-15
+
+- Make the pre-email pending DOI tag/segment update best-effort so a tag,
+  segment or listener failure cannot prevent the DOI email from being sent.
+- Log a warning with DOI contact context when pending state assignment fails.
+- Extend the state-transition regression to cover non-fatal pending failures.
+
 ## 2.0.11 - 2026-09-11
 
 - Apply the existing `remove_tags_doi_success_tags` selections as pending DOI

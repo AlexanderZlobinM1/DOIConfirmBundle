@@ -151,7 +151,7 @@ final class DoiTestLogger extends Psr\Log\AbstractLogger
 {
     public array $records = [];
 
-    public function log($level, Stringable|string $message, array $context = []): void
+    public function log($level, $message, array $context = []): void
     {
         $this->records[] = [$level, (string) $message, $context];
     }

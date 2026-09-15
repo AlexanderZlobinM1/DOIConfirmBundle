@@ -24,6 +24,7 @@ use MauticPlugin\DOIConfirmBundle\Helper\DoiStateTransitionHelper;
 use MauticPlugin\DOIConfirmBundle\DoiEvents;
 use MauticPlugin\DOIConfirmBundle\Event\DoiStarted;
 use MauticPlugin\DOIConfirmBundle\Service\PluginEnabledResolver;
+use Psr\Log\LoggerInterface;
 
 /**
  * Class FormSubscriber.
@@ -45,12 +46,14 @@ class FormSubscriber implements EventSubscriberInterface
 
     private PluginEnabledResolver $pluginEnabledResolver;
 
+    private LoggerInterface $logger;
+
 
     /**
      * FormSubscriber constructor.
      *
      */
-    public function __construct($router, $eventDispatcher, $encryptionHelper, $emailModel, $leadModel, ContactTracker $contactTracker, PluginEnabledResolver $pluginEnabledResolver)
+    public function __construct($router, $eventDispatcher, $encryptionHelper, $emailModel, $leadModel, ContactTracker $contactTracker, PluginEnabledResolver $pluginEnabledResolver, LoggerInterface $logger)
     {
         $this->router = $router;
         $this->eventDispatcher = $eventDispatcher;
@@ -59,6 +62,7 @@ class FormSubscriber implements EventSubscriberInterface
         $this->leadModel = $leadModel;
         $this->contactTracker = $contactTracker;
         $this->pluginEnabledResolver = $pluginEnabledResolver;
+        $this->logger = $logger;
     }
 
     /**
@@ -108,7 +112,15 @@ class FormSubscriber implements EventSubscriberInterface
 
     private function applyPendingState($config, $lead): void
     {
-        DoiStateTransitionHelper::applyPendingState($this->leadModel, $lead, $config);
+        DoiStateTransitionHelper::applyPendingStateBestEffort(
+            $this->leadModel,
+            $lead,
+            $config,
+            $this->logger,
+            [
+                'lead_id' => method_exists($lead, 'getId') ? $lead->getId() : null,
+            ]
+        );
     }
     
     /**

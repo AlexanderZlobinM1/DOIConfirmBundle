@@ -38,7 +38,7 @@ $defaultIntegrationArguments = array_merge(
 return [
     'name'        => 'DOI Confirm Bundle',
     'description' => 'Adds a robust and flexible way to add a double-opt-in process (DOI) to any form in Mautic.',
-    'version'     => '2.0.11',
+    'version'     => '2.0.12',
     'author'      => 'Alexander Zlobin',
     'services' => [
         'events' => [
@@ -52,6 +52,7 @@ return [
                     'mautic.lead.model.lead',
                     'mautic.tracker.contact',
                     'jw.doi.plugin_enabled_resolver',
+                    'monolog.logger.mautic',
                 ]
             ],
             'jw.mautic.email.report.doi' => [

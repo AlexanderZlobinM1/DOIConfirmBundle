@@ -2,6 +2,8 @@
 
 namespace MauticPlugin\DOIConfirmBundle\Helper;
 
+use Psr\Log\LoggerInterface;
+
 class DoiStateTransitionHelper
 {
     public static function applyPendingState($leadModel, $lead, array $config): void
@@ -15,6 +17,27 @@ class DoiStateTransitionHelper
 
         if (!empty($pendingLists)) {
             $leadModel->addToLists($lead, $pendingLists);
+        }
+    }
+
+    public static function applyPendingStateBestEffort($leadModel, $lead, array $config, LoggerInterface $logger, array $context = []): bool
+    {
+        try {
+            self::applyPendingState($leadModel, $lead, $config);
+
+            return true;
+        } catch (\Throwable $exception) {
+            $logger->warning(
+                'DOI pending state update failed; confirmation email will continue.',
+                array_merge(
+                    [
+                        'exception' => $exception,
+                    ],
+                    $context
+                )
+            );
+
+            return false;
         }
     }
 

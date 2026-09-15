@@ -97,3 +97,13 @@ successful confirmation, the existing success flow remains unchanged: pending
 tags and segments are removed, confirmed tags and segments are added, field
 updates run, DNC is removed and events/audit continue. No form action storage
 keys, routes, schema, token names or translation keys changed.
+
+## Patch note for 2.0.12
+
+The 2.0.11 pending-state assignment runs before DOI email dispatch. In Mautic
+6.0.9, submit-action execution only catches `ValidationException`, so any
+unexpected tag, segment or listener exception from that pre-email mutation can
+abort the DOI action before `EmailModel::sendEmail()` and `doi.started` run.
+2.0.12 keeps the pending-state behavior but makes that pre-email mutation
+best-effort and logs a warning. DOI email dispatch continues; confirmation
+success actions remain unchanged.
