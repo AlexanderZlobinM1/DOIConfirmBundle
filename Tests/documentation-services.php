@@ -34,21 +34,8 @@ $container->setParameter('mautic.plugin.bundles', [[
 ]]);
 
 foreach ([
-    'doctrine',
-    'mautic.factory',
-    'mautic.model.factory',
-    'mautic.helper.user',
-    'mautic.helper.core_parameters',
-    'event_dispatcher',
-    'translator',
-    Mautic\CoreBundle\Service\FlashBag::class,
-    'request_stack',
     'mautic.security',
-    'service_container',
-    'mautic.page.model.page',
-    'mautic.core.model.notification',
     'router',
-    'http_kernel',
     'twig',
 ] as $serviceId) {
     $container->register($serviceId, stdClass::class)->setSynthetic(true)->setPublic(true);
@@ -66,14 +53,8 @@ $controller = $container->getDefinition($controllerId);
 if (!$controller->hasTag('controller.service_arguments')) {
     throw new RuntimeException('Documentation controller is missing controller.service_arguments.');
 }
-$expectedConstructorArguments = version_compare($testedMauticVersion, '6.0.0', '<') ? 10 : 9;
-if ($expectedConstructorArguments !== count($controller->getArguments())) {
-    throw new RuntimeException(sprintf(
-        'Documentation controller received %d CommonController arguments; expected %d for Mautic %s.',
-        count($controller->getArguments()),
-        $expectedConstructorArguments,
-        $testedMauticVersion
-    ));
+if ([] !== $controller->getArguments()) {
+    throw new RuntimeException('Documentation controller must not eagerly construct CommonController dependencies.');
 }
 
 $argumentResolver = new Symfony\Component\DependencyInjection\Definition(stdClass::class, [null]);
@@ -91,9 +72,6 @@ if (!$resolverWasLocated) {
     throw new RuntimeException('Controller action argument locator did not resolve DocumentationLocaleResolver.');
 }
 
-echo sprintf(
-    'CONTROLLER_SERVICE registered constructor_args=%d tag=controller.service_arguments',
-    $expectedConstructorArguments
-).PHP_EOL;
+echo 'CONTROLLER_SERVICE registered constructor_args=0 tag=controller.service_arguments'.PHP_EOL;
 echo 'ACTION_ARGUMENT '.MauticPlugin\DOIConfirmBundle\Service\DocumentationLocaleResolver::class.PHP_EOL;
 echo 'PASS DOI documentation service wiring Mautic '.MAUTIC_VERSION.PHP_EOL;

@@ -1,10 +1,10 @@
-# DOIConfirmBundle 3.0.2: руководство оператора
+# DOIConfirmBundle 3.0.3: руководство оператора
 
-Документ описывает canonical plugin source `DOIConfirmBundle` версии `3.0.2`
+Документ описывает canonical plugin source `DOIConfirmBundle` версии `3.0.3`
 для Mautic 5.x, 6.x и 7.x, включая проверенный сценарий Mautic 7.1.3.
-Live-установку, demo-цепочку и приемку на `news.show-master.ru` выполняет
-SalesSnap-Operation. Этот репозиторий содержит только source, документацию и
-plugin-owned compatibility evidence.
+Версия 3.0.3 также использовалась для узкого восстановления
+`news.show-master.ru` после container cycle в 3.0.2. Полная приемка
+аутентифицированного UI и почтовой DOI-цепочки выполняется оператором.
 
 ![Жизненный цикл DOI](../assets/doi-lifecycle-ru.svg)
 
@@ -202,7 +202,9 @@ instance, не plugin source task.
 
 Быстрые проверки без изменения Mautic core:
 
-1. Убедиться, что plugin version в Mautic registry равен `3.0.2`.
+1. Убедиться, что plugin version в Mautic registry равен `3.0.3`. Версию
+   `3.0.2` нельзя использовать на Mautic 7.1.3: она создает circular dependency
+   при сборке контейнера и может вызвать глобальный HTTP 500.
 2. Убедиться, что `/s/plugins/config/DoiReport` открывается не 404, а обычной
    страницей настройки integration.
 3. Убедиться, что integration `Doi Report` active.
@@ -263,8 +265,10 @@ cache rebuild — отдельная operational operation.
 Rollback live instance выполняет SalesSnap-Operation штатным MCC/MCD путем.
 Plugin source contract для rollback:
 
-1. Предыдущий опубликованный tag: `v3.0.1`.
-2. Текущий опубликованный tag: `v3.0.2`.
+1. Предыдущий опубликованный tag: `v3.0.2` (небезопасен для Mautic 7.1.3;
+   для rollback на этой версии Mautic используйте последний проверенный tag до
+   3.0.2 или исправленный 3.0.3 по решению владельца инстанса).
+2. Текущий опубликованный tag: `v3.0.3`.
 3. Bundle directory: `plugins/DOIConfirmBundle`.
 4. Runtime state хранится в Mautic form action config, integration settings,
    contacts, DNC, audit log и webhook queue; plugin rollback не должен purge
@@ -274,9 +278,9 @@ Plugin source contract для rollback:
 6. Если async Messenger был настроен для `DoiConfirmationMessage`, worker и
    queue state проверяются отдельно владельцем instance.
 
-## Проверка v3.0.2 для Mautic 5.x, 6.x и 7.x
+## Проверка v3.0.3 для Mautic 5.x, 6.x и 7.x
 
-Проверка source выполнена для release `v3.0.2`:
+Проверка source выполнена для release `v3.0.3`:
 
 - integration discovery aligned: `Integration/DoiReportIntegration.php`,
   service id `mautic.integration.doireport`, object name `DoiReport`;
@@ -301,12 +305,16 @@ Plugin source contract для rollback:
   выбирает `en_US`, `de_DE`, `ru`/`ru_RU` или `sr_RS` по текущей locale Mautic
   и содержит полные сценарии candidate email, tokens, evidence и проверки;
 - controller и locale resolver справки зарегистрированы через штатный plugin
-  service map `Config/config.php`; Mautic 5 получает 10 inherited constructor
-  arguments, Mautic 6/7 получают 9, а action argument locator разрешает
-  `DocumentationLocaleResolver`;
+  service map `Config/config.php`; controller не имеет eager constructor
+  dependencies, а action argument locator разрешает `CorePermissions`,
+  `DocumentationLocaleResolver`, router и Twig только при открытии справки;
 - DB-free controller test подтверждает admin HTML 200, AJAX JSON, выбор locale
-  и 403 для non-admin; live HTTP acceptance версии 3.0.2 на конкретном
-  инстансе Mautic 7.1.3 остается задачей владельца инстанса;
+  и 403 для non-admin; exact Mautic 7.1.3 cache clear/warmup, service/route
+  discovery, runtime compatibility и controller tests пройдены;
+- на восстановленном live Mautic 7.1.3 `/s/plugins` и route справки доходят до
+  login redirect без HTTP 500, `/mtc.js` и контролируемый `/mtc/event`
+  возвращают HTTP 200; authenticated UI/docs и реальная почтовая DOI-цепочка
+  остаются ручной приемкой оператора;
 - integration использует штатный Mautic form template с обычным переключателем
   `Active`; через custom form notes добавляются только кнопка справки и нижняя
   строка Sales Snap;
@@ -343,5 +351,7 @@ Plugin source contract для rollback:
 - локальный runtime compatibility check пройден на Mautic `7.2.0` и `6.0.0`
   с новым service wiring `request_stack` + `doctrine.orm.entity_manager`.
 
-Ограничение evidence: live delivery, live webhook receiver, live queue worker и
-customer-host installation не выполнялись в plugin source task.
+Ограничение evidence: live delivery, live webhook receiver, live queue worker
+и authenticated UI/docs не выполнялись. Узкая установка двух исправленных
+файлов и восстановительные HTTP smoke checks на customer host выполнены с
+прямого разрешения оператора.

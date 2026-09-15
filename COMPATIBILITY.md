@@ -246,3 +246,26 @@ simulating the constructor branches for 5.2.10, 6.0.9, 7.1.3 and 7.2.0.
 This is plugin-owned DB-free evidence, not live HTTP acceptance on those exact
 instances. The native integration form, Active switch, DOI state transitions,
 public confirmation routes and one-line Sales Snap footer are unchanged.
+
+Post-release correction: exact Mautic 7.1.3 runtime testing found that this
+constructor wiring is unsafe. Constructing `CommonController` eagerly requests
+Mautic's `FlashBag`, which closes a circular dependency through
+`NotificationModel` and `mautic.security`. Version 3.0.2 must not be installed
+on Mautic 7.1.3; use 3.0.3 or later.
+
+## Patch note for 3.0.3
+
+3.0.3 makes `DocumentationController` a small standalone controller. Mautic's
+controller argument locator injects `CorePermissions`, the locale resolver,
+router and Twig only when the documentation action is called. No constructor
+dependency is registered, so plugin discovery and unrelated routes cannot
+instantiate `FlashBag` or `NotificationModel` through this feature.
+
+The action keeps the same admin permission check, locale selection, Twig
+content and full-page/AJAX response contract. Exact Mautic 7.1.3 evidence
+includes cache clear/warmup, service and route discovery, the complete plugin
+runtime compatibility check and controller tests. On the repaired 7.1.3 live
+instance, `/s/plugins` and the documentation route returned login redirects
+instead of HTTP 500, while `/mtc.js` and a controlled `/mtc/event` request
+returned HTTP 200. Authenticated documentation rendering and end-to-end DOI
+email delivery remain operator acceptance checks.
