@@ -247,11 +247,12 @@ This is plugin-owned DB-free evidence, not live HTTP acceptance on those exact
 instances. The native integration form, Active switch, DOI state transitions,
 public confirmation routes and one-line Sales Snap footer are unchanged.
 
-Post-release correction: exact Mautic 7.1.3 runtime testing found that this
-constructor wiring is unsafe. Constructing `CommonController` eagerly requests
-Mautic's `FlashBag`, which closes a circular dependency through
-`NotificationModel` and `mautic.security`. Version 3.0.2 must not be installed
-on Mautic 7.1.3; use 3.0.3 or later.
+Post-release correction: production Mautic 6 and exact Mautic 7.1.3 runtime
+evidence found that this constructor wiring is unsafe. Constructing
+`CommonController` eagerly requests Mautic's `FlashBag`, which closes a
+circular dependency through `NotificationModel` and `mautic.security`.
+Version 3.0.2 must not be installed on Mautic 6 or Mautic 7.1.3; use 3.0.3 or
+later.
 
 ## Patch note for 3.0.3
 
@@ -264,8 +265,13 @@ instantiate `FlashBag` or `NotificationModel` through this feature.
 The action keeps the same admin permission check, locale selection, Twig
 content and full-page/AJAX response contract. Exact Mautic 7.1.3 evidence
 includes cache clear/warmup, service and route discovery, the complete plugin
-runtime compatibility check and controller tests. On the repaired 7.1.3 live
-instance, `/s/plugins` and the documentation route returned login redirects
-instead of HTTP 500, while `/mtc.js` and a controlled `/mtc/event` request
-returned HTTP 200. Authenticated documentation rendering and end-to-end DOI
-email delivery remain operator acceptance checks.
+runtime compatibility check and controller tests. The immutable 3.0.3 release
+also passes real cache clear/warmup, service/route discovery, complete runtime
+compatibility and controller tests on the official Mautic 6.0.9 tag. That M6
+fixture ran on PHP 8.5.9 because PHP 8.3.32 was not locally available; both
+reported M6 production failures were on PHP 8.3.32 and occurred with 3.0.2,
+not 3.0.3. On the repaired 7.1.3 live instance, `/s/plugins` and the
+documentation route returned login redirects instead of HTTP 500, while
+`/mtc.js` and a controlled `/mtc/event` request returned HTTP 200.
+Authenticated documentation rendering and end-to-end DOI email delivery
+remain operator acceptance checks.

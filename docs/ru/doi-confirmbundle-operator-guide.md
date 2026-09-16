@@ -203,8 +203,9 @@ instance, не plugin source task.
 Быстрые проверки без изменения Mautic core:
 
 1. Убедиться, что plugin version в Mautic registry равен `3.0.3`. Версию
-   `3.0.2` нельзя использовать на Mautic 7.1.3: она создает circular dependency
-   при сборке контейнера и может вызвать глобальный HTTP 500.
+   `3.0.2` нельзя использовать на Mautic 6 или Mautic 7.1.3: она создает
+   circular dependency при сборке контейнера и может вызвать глобальный
+   HTTP 500.
 2. Убедиться, что `/s/plugins/config/DoiReport` открывается не 404, а обычной
    страницей настройки integration.
 3. Убедиться, что integration `Doi Report` active.
@@ -311,6 +312,10 @@ Plugin source contract для rollback:
 - DB-free controller test подтверждает admin HTML 200, AJAX JSON, выбор locale
   и 403 для non-admin; exact Mautic 7.1.3 cache clear/warmup, service/route
   discovery, runtime compatibility и controller tests пройдены;
+- официальный Mautic 6.0.9 tag также прошел реальный cache clear/warmup,
+  service/route discovery, полный runtime compatibility и controller tests;
+  fixture работал на PHP 8.5.9, поэтому production-приемка PHP 8.3.32 остается
+  отдельной проверкой оператора;
 - на восстановленном live Mautic 7.1.3 `/s/plugins` и route справки доходят до
   login redirect без HTTP 500, `/mtc.js` и контролируемый `/mtc/event`
   возвращают HTTP 200; authenticated UI/docs и реальная почтовая DOI-цепочка

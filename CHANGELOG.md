@@ -5,11 +5,13 @@
 - Replace the documentation controller's inherited `CommonController`
   construction with action-injected Mautic services. This removes the
   `mautic.security -> FlashBag -> NotificationModel -> mautic.security`
-  container cycle introduced by 3.0.2 on Mautic 7.1.3.
+  container cycle introduced by 3.0.2 on Mautic 6 and 7.1.3.
 - Preserve admin-only access, localized full-page rendering and Mautic AJAX
   navigation without eagerly constructing unrelated controller services.
 - Add exact Mautic 7.1.3 container, cache, runtime compatibility and controller
-  tests. The live repair also restored the login-protected plugin routes and
+  tests. The same immutable release was subsequently verified with real cache
+  compilation and the full runtime suite on the official Mautic 6.0.9 source.
+  The live 7.1.3 repair also restored the login-protected plugin routes and
   public tracking endpoints without changing integration or form-action data.
 
 ## 3.0.2 - 2026-09-15
