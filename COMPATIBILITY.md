@@ -276,13 +276,15 @@ documentation route returned login redirects instead of HTTP 500, while
 Authenticated documentation rendering and end-to-end DOI email delivery
 remain operator acceptance checks.
 
-## Patch note for 3.0.4
+## Patch note for 3.0.5
 
-3.0.4 applies one forward success-URL rule before encrypting a new DOI payload:
+3.0.5 applies one forward success-URL rule before encrypting a new DOI payload:
 a relative or same-host Mautic admin preview path matching
 `/s/forms/preview/{id}` becomes the public `/form/{id}` path. Query strings and
 fragments are retained. An explicit URL on another host is returned unchanged,
-even if its path resembles Mautic's preview route.
+even if its path resembles Mautic's preview route. Route classification does
+not decode the prepared URL again, so an explicitly encoded external URL is
+preserved byte-for-byte at this stage.
 
 The plugin does not register, replace or weaken Mautic's protected admin
 preview route, and it does not change AuthGuard or MFA. Per operator direction,

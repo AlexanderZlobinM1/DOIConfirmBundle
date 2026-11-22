@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.0.5 - 2026-11-22
+
+- Preserve an explicitly encoded external success URL byte-for-byte during
+  DOI route classification instead of decoding it a second time.
+
 ## 3.0.4 - 2026-11-22
 
 - Normalize same-host Mautic admin form preview success URLs from

@@ -1,5 +1,7 @@
 # CHANGELOG
 
+- 3.0.5: Preserve explicitly encoded external success URLs without a second
+  decode during DOI route classification.
 - 3.0.4: Redirect DOI confirmations from same-host admin form previews to the
   public form route while preserving explicit external success URLs and
   admin-route protection.

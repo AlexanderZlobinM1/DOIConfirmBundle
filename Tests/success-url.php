@@ -35,6 +35,14 @@ assertSuccessUrl(
     'Explicit external success URL changed.'
 );
 assertSuccessUrl(
+    'https://success.example.test/thank-you?return=%252Faccount%252Fconfirmed',
+    SuccessUrlHelper::normalize(
+        'https://success.example.test/thank-you?return=%252Faccount%252Fconfirmed',
+        'infopoint.sales-snap.com'
+    ),
+    'Explicit encoded external success URL was decoded or otherwise changed.'
+);
+assertSuccessUrl(
     'https://external.example.test/s/forms/preview/4',
     SuccessUrlHelper::normalize(
         'https://external.example.test/s/forms/preview/4',

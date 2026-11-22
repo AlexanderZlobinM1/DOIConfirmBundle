@@ -1,6 +1,6 @@
-# DOIConfirmBundle 3.0.4: руководство оператора
+# DOIConfirmBundle 3.0.5: руководство оператора
 
-Документ описывает canonical plugin source `DOIConfirmBundle` версии `3.0.4`
+Документ описывает canonical plugin source `DOIConfirmBundle` версии `3.0.5`
 для Mautic 5.x, 6.x и 7.x, включая проверенный сценарий Mautic 7.1.3.
 Версия 3.0.3 также использовалась для узкого восстановления
 `news.show-master.ru` после container cycle в 3.0.2. Полная приемка
@@ -204,7 +204,7 @@ instance, не plugin source task.
 
 Быстрые проверки без изменения Mautic core:
 
-1. Убедиться, что plugin version в Mautic registry равен `3.0.4`. Версию
+1. Убедиться, что plugin version в Mautic registry равен `3.0.5`. Версию
    `3.0.2` нельзя использовать на Mautic 6 или Mautic 7.1.3: она создает
    circular dependency при сборке контейнера и может вызвать глобальный
    HTTP 500.
@@ -216,7 +216,7 @@ instance, не plugin source task.
 6. Если используется scanner protection, проверить наличие `{doi_nothuman}` в
    скрытой/нечеловеческой ссылке, а не в видимой кнопке.
 7. Проверить, что redirect URL в `post_url` абсолютный и валидный. Не
-   использовать административный `/s/forms/preview/{id}`; версия 3.0.4
+   использовать административный `/s/forms/preview/{id}`; версия 3.0.5
    преобразует такую настройку в публичный `/form/{id}` при создании DOI-ссылки.
 8. Проверить Mautic logs на diagnostic:
    `DOI runtime disabled: DoiReport integration settings are missing` или
@@ -270,8 +270,8 @@ cache rebuild — отдельная operational operation.
 Rollback live instance выполняет SalesSnap-Operation штатным MCC/MCD путем.
 Plugin source contract для rollback:
 
-1. Предыдущий опубликованный tag: `v3.0.3`.
-2. Текущий опубликованный tag: `v3.0.4`.
+1. Предыдущий опубликованный tag: `v3.0.4`.
+2. Текущий опубликованный tag: `v3.0.5`.
 3. Bundle directory: `plugins/DOIConfirmBundle`.
 4. Runtime state хранится в Mautic form action config, integration settings,
    contacts, DNC, audit log и webhook queue; plugin rollback не должен purge
@@ -281,9 +281,9 @@ Plugin source contract для rollback:
 6. Если async Messenger был настроен для `DoiConfirmationMessage`, worker и
    queue state проверяются отдельно владельцем instance.
 
-## Проверка v3.0.4 для Mautic 5.x, 6.x и 7.x
+## Проверка v3.0.5 для Mautic 5.x, 6.x и 7.x
 
-Проверка source выполнена для release `v3.0.4`:
+Проверка source выполнена для release `v3.0.5`:
 
 - локальный `/s/forms/preview/{id}` преобразуется в `/form/{id}` до
   шифрования DOI payload; внешний success URL и уже публичный `/form/{id}`

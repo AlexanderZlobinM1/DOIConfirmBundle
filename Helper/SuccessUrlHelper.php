@@ -14,7 +14,7 @@ final class SuccessUrlHelper
      */
     public static function normalize(string $url, ?string $currentHost = null): string
     {
-        $url = trim(urldecode($url));
+        $url = trim($url);
         if ('' === $url) {
             return '';
         }
