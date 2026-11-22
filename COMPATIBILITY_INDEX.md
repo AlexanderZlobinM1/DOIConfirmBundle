@@ -1,30 +1,30 @@
 # Compatibility index
 
-Last synchronized from the 3.0.5 DOI public-success redirect correction: 22 November 2026.
+Last synchronized from the rollback to the pre-normalization 3.0.3 contract: 22 November 2026.
 
-Current release: `3.0.5` (`v3.0.5`). Declared support: Mautic 5.x, 6.x, 7.x; PHP >=8.1 <8.5.
+Current manifest contract: `3.0.3`; immutable baseline tag: `v3.0.3`; canonical main contains the rollback evidence. Declared support: Mautic 5.x, 6.x, 7.x; PHP >=8.1 <8.5.
 
 | Mautic | Status | Confirmed scope |
 | --- | --- | --- |
-| 5.2.10 | ✓ | Inherited from 3.0.3; 3.0.5 changes only pure URL normalization before payload encryption and introduces no Mautic API, service or schema change |
-| 6.0.9 | ✓ | Inherited from exact 3.0.3 cache/runtime/controller evidence; 3.0.5 changes only pure URL normalization before payload encryption |
-| 7.1.3 | ✓ | Inherited from exact 3.0.3 cache/runtime/controller and live route-health evidence; 3.0.5 changes only pure URL normalization before payload encryption |
-| 7.2.0 | ✓ | Inherited from prior 7.2 runtime/service evidence; targeted 3.0.5 URL regression and 7.2.2 service wiring pass, while infopoint live acceptance remains Operations-owned |
-| 7.2.2 | ✓ | Compatible by retained 7.2 runtime evidence and patch-release inheritance: 3.0.5 changes only pure URL normalization, with no Mautic API, service, schema or lifecycle change; the specific infopoint redirect remains an acceptance check, not a compatibility downgrade |
+| 5.2.10 | ✓ | Restored 3.0.3 contract; prior exact service evidence retained and URL pass-through regression passed |
+| 6.0.9 | ✓ | Restored 3.0.3 contract; exact cache/runtime/controller evidence retained |
+| 7.1.3 | ✓ | Restored 3.0.3 contract; exact cache/runtime/controller and live route-health evidence retained |
+| 7.2.0 | ✓ | Restored 3.0.3 contract; prior 7.2 runtime/service evidence and URL pass-through regression retained |
+| 7.2.2 | ✓ | Restored 3.0.3 contract; exact route matrix confirms Mautic/AuthGuard retain access-control ownership while the plugin preserves the configured target |
 
-3.0.5 normalizes a same-host `/s/forms/preview/{id}` configured success URL to
-the public `/form/{id}` route before the DOI payload is encrypted. Explicit
-external success URLs are preserved, and the plugin does not alter or override
-Mautic's protected admin preview route. Per operator direction, the release
-contains one forward algorithm only: no migration or compensating handling for
-previously issued encrypted payloads.
+Canonical main restores the pre-normalization 3.0.3 manifest and behavior.
+Configured public `/form/{id}`, private `/s/forms/preview/{id}` and external
+targets are passed through without route classification, decoding or rewriting;
+only explicitly configured contact-token replacement remains. Mautic and
+AuthGuard apply the configured target's native access policy. Tags `v3.0.4`
+and `v3.0.5` are rejected for acceptance because they contain the erroneous
+same-host URL rewrite.
 
 The post-release email-route matrix records the complete DOI chain for Mautic
 7.2.2: optional native `/r/{redirectId}` tracking, plugin-public `/doi/{enc}`
-or `/nothuman/{hash}`, native email tracking routes and public `/form/{id}`
-success. Exact 7.2.2 route-source regression confirms those routes remain in
-Mautic's `public` group, while `/s/forms/preview/{id}` and plugin documentation
-remain protected controls. AuthGuard is neither referenced nor modified.
+or `/nothuman/{hash}` and native email tracking routes. Exact 7.2.2
+route-source regression confirms each target retains its native Mautic access
+group. AuthGuard is neither referenced nor modified by DOIConfirmBundle.
 
 3.0.3 replaces the documentation controller's eager inherited dependencies
 with action injection, removing the Mautic 6/7.1.3 container cycle introduced
@@ -46,5 +46,5 @@ The 3.0.3 candidate was installed as a narrowly authorized repair on Mautic
 7.1.3 and restored non-authenticated route health. No external delivery/provider
 exchange or authenticated administrator acceptance was exercised. Update this
 file and the workspace `../../COMPATIBILITY_INDEX.md` row with every
-plugin-related change or review. The 3.0.5 live install, cache and redirect/MFA
+plugin-related change or review. The immutable rollback-ref live install, cache and redirect/MFA
 acceptance on Mautic 7.2.2 remain with SalesSnap-Operation.

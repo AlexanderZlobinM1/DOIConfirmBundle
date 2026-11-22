@@ -1,6 +1,6 @@
-# DOIConfirmBundle 3.0.5: руководство оператора
+# DOIConfirmBundle 3.0.3: руководство оператора
 
-Документ описывает canonical plugin source `DOIConfirmBundle` версии `3.0.5`
+Документ описывает canonical plugin source `DOIConfirmBundle` с восстановленным manifest `3.0.3`
 для Mautic 5.x, 6.x и 7.x, включая проверенный сценарий Mautic 7.1.3.
 Версия 3.0.3 также использовалась для узкого восстановления
 `news.show-master.ru` после container cycle в 3.0.2. Полная приемка
@@ -135,9 +135,10 @@ Public route `/doi/{enc}`:
 6. Отправляет `DoiConfirmationMessage` в `messenger.default_bus` с задержкой
    60 секунд.
 7. Если dispatch недоступен, применяет fallback processing сразу.
-8. Redirect выполняется на `post_url`. Локальный административный preview
-   `/s/forms/preview/{id}` заменяется его публичным эквивалентом `/form/{id}`.
-   Явно заданные внешние URL не меняются.
+8. Redirect выполняется на `post_url` ровно в настроенном виде. Плагин не
+   определяет публичность маршрута и не преобразует `/s/forms/preview/{id}` в
+   `/form/{id}`. Авторизация и MFA применяются штатно Mautic/AuthGuard после
+   перехода браузера на настроенный target.
 
 Public route `/nothuman/{hash}`:
 
@@ -204,7 +205,7 @@ instance, не plugin source task.
 
 Быстрые проверки без изменения Mautic core:
 
-1. Убедиться, что plugin version в Mautic registry равен `3.0.5`. Версию
+1. Убедиться, что plugin version в Mautic registry равен `3.0.3`. Версию
    `3.0.2` нельзя использовать на Mautic 6 или Mautic 7.1.3: она создает
    circular dependency при сборке контейнера и может вызвать глобальный
    HTTP 500.
@@ -215,9 +216,9 @@ instance, не plugin source task.
 5. Проверить, что выбранный email published и содержит `{doi_url}`.
 6. Если используется scanner protection, проверить наличие `{doi_nothuman}` в
    скрытой/нечеловеческой ссылке, а не в видимой кнопке.
-7. Проверить, что redirect URL в `post_url` абсолютный и валидный. Не
-   использовать административный `/s/forms/preview/{id}`; версия 3.0.5
-   преобразует такую настройку в публичный `/form/{id}` при создании DOI-ссылки.
+7. Проверить, что redirect URL в `post_url` соответствует требуемому сценарию.
+   `/form/{id}` останется публичным, `/s/forms/preview/{id}` останется
+   защищённым, а внешний URL останется внешним. Плагин адрес не переписывает.
 8. Проверить Mautic logs на diagnostic:
    `DOI runtime disabled: DoiReport integration settings are missing` или
    `DOI runtime disabled: DoiReport integration is not active`.
@@ -270,8 +271,8 @@ cache rebuild — отдельная operational operation.
 Rollback live instance выполняет SalesSnap-Operation штатным MCC/MCD путем.
 Plugin source contract для rollback:
 
-1. Предыдущий опубликованный tag: `v3.0.4`.
-2. Текущий опубликованный tag: `v3.0.5`.
+1. Tags `v3.0.4` и `v3.0.5` содержат отклонённую нормализацию и не используются.
+2. Manifest contract и baseline tag: `v3.0.3`; для установки использовать возвращённый immutable rollback ref из canonical main.
 3. Bundle directory: `plugins/DOIConfirmBundle`.
 4. Runtime state хранится в Mautic form action config, integration settings,
    contacts, DNC, audit log и webhook queue; plugin rollback не должен purge
@@ -281,13 +282,13 @@ Plugin source contract для rollback:
 6. Если async Messenger был настроен для `DoiConfirmationMessage`, worker и
    queue state проверяются отдельно владельцем instance.
 
-## Проверка v3.0.5 для Mautic 5.x, 6.x и 7.x
+## Проверка rollback к 3.0.3 для Mautic 5.x, 6.x и 7.x
 
-Проверка source выполнена для release `v3.0.5`:
+Проверка source выполнена для immutable rollback ref с manifest `3.0.3`:
 
-- локальный `/s/forms/preview/{id}` преобразуется в `/form/{id}` до
-  шифрования DOI payload; внешний success URL и уже публичный `/form/{id}`
-  остаются без изменений, а plugin route map не переопределяет admin preview;
+- локальные `/s/forms/preview/{id}` и `/form/{id}`, внешний success URL,
+  query, fragment и encoded bytes сохраняются; plugin route map не
+  переопределяет маршруты, а Mautic/AuthGuard штатно контролируют доступ;
 - integration discovery aligned: `Integration/DoiReportIntegration.php`,
   service id `mautic.integration.doireport`, object name `DoiReport`;
 - duplicate exact-name `DoiReport` rows normalized deterministically: active

@@ -276,15 +276,30 @@ documentation route returned login redirects instead of HTTP 500, while
 Authenticated documentation rendering and end-to-end DOI email delivery
 remain operator acceptance checks.
 
-## Patch note for 3.0.5
+## Current main rollback to the 3.0.3 contract
 
-3.0.5 applies one forward success-URL rule before encrypting a new DOI payload:
+Canonical main removes the route-classification behavior introduced after
+3.0.3 and restores manifest version `3.0.3`. The configured success URL is
+copied into each new DOI payload without decoding or route rewriting; only
+explicitly configured contact-token replacement remains. Relative public
+paths, relative private paths, absolute external URLs, query strings,
+fragments and encoded bytes are preserved.
+
+DOIConfirmBundle does not decide whether the configured target is public or
+protected. Mautic's native access map and AuthGuard MFA apply when the browser
+requests the target after DOI processing. Tags `v3.0.4` and `v3.0.5` must not
+be used for acceptance.
+
+## Rejected patch note for 3.0.5
+
+3.0.5 applied a success-URL rewrite before encrypting a new DOI payload:
 a relative or same-host Mautic admin preview path matching
 `/s/forms/preview/{id}` becomes the public `/form/{id}` path. Query strings and
 fragments are retained. An explicit URL on another host is returned unchanged,
 even if its path resembles Mautic's preview route. Route classification does
 not decode the prepared URL again, so an explicitly encoded external URL is
-preserved byte-for-byte at this stage.
+preserved byte-for-byte at this stage. This tag is rejected because the
+same-host rewrite changed explicit user configuration.
 
 The plugin does not register, replace or weaken Mautic's protected admin
 preview route, and it does not change AuthGuard or MFA. Per operator direction,
@@ -298,8 +313,9 @@ redirect and MFA acceptance remains with SalesSnap-Operation.
 
 The post-release evidence files
 `compatibility/doi-email-route-matrix-v1.json` and
-`docs/doi-email-route-matrix.md` enumerate the complete email link chain,
+`docs/doi-email-route-matrix.md` enumerate the complete email link chain and
+the corrected responsibility boundary,
 including Mautic's optional `/r/{redirectId}` wrapper and automatic
 `/email/{idHash}.gif` tracker. `Tests/email-route-matrix.php` checks plugin
-token/route wiring, exact Mautic 7.2.2 public route groups and the protected
-admin-preview negative control without introducing an AuthGuard dependency.
+token/route wiring, configured-target preservation and exact Mautic 7.2.2
+route groups without introducing an AuthGuard dependency.

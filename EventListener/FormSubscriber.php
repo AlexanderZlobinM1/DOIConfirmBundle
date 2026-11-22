@@ -25,7 +25,6 @@ use MauticPlugin\DOIConfirmBundle\Entity\DoNotContact as DNC;
 use MauticPlugin\DOIConfirmBundle\Helper\LeadHelper;
 use MauticPlugin\DOIConfirmBundle\Helper\Base64Helper;
 use MauticPlugin\DOIConfirmBundle\Helper\DoiStateTransitionHelper;
-use MauticPlugin\DOIConfirmBundle\Helper\SuccessUrlHelper;
 use MauticPlugin\DOIConfirmBundle\DoiEvents;
 use MauticPlugin\DOIConfirmBundle\Event\DoiStarted;
 use MauticPlugin\DOIConfirmBundle\Service\PluginEnabledResolver;
@@ -323,10 +322,10 @@ class FormSubscriber implements EventSubscriberInterface
         }
 
         if (!is_array($tokens)) {
-            return urldecode($url);
+            return $url;
         }
 
-        return str_replace(array_keys($tokens), array_values($tokens), urldecode($url));
+        return str_replace(array_keys($tokens), array_values($tokens), $url);
     }
 
     private function sendDoiEmail($lead, $config, $doidata, $tokens, $submissionId)
@@ -436,11 +435,6 @@ class FormSubscriber implements EventSubscriberInterface
         $form         = $event->getForm();
         $submissionId = $event->getSubmission()->getId();
         $formId       = $form->getId();
-        $currentRequest = $this->requestStack->getCurrentRequest();
-        $currentHost = $currentRequest instanceof Request ? $currentRequest->getHost() : null;
-        if (null === $currentHost && method_exists($this->router, 'getContext')) {
-            $currentHost = $this->router->getContext()->getHost();
-        }
         try {
             $hash = bin2hex(random_bytes(16));
         } catch (\Throwable $exception) {
@@ -450,10 +444,7 @@ class FormSubscriber implements EventSubscriberInterface
         //Build doi confirm url 
         $data = [
             'lead_id'  => $lead->getId(), 
-            'url' => SuccessUrlHelper::normalize(
-                $this->preparePostUrl($config['post_url'] ?? '', $tokens),
-                $currentHost
-            ),
+            'url' => $this->preparePostUrl($config['post_url'] ?? '', $tokens),
             'add_tags' =>  $config['add_campaign_doi_success_tags'] ?? [],
             'remove_tags' =>  $config['remove_tags_doi_success_tags'] ?? [],
             'addToLists' =>  $config['add_campaign_doi_success_lists'] ?? [],

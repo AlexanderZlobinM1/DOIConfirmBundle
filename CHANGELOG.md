@@ -1,5 +1,12 @@
 # Changelog
 
+## Current main rollback to 3.0.3 - 2026-11-22
+
+- Remove plugin-owned success-URL classification and route rewriting while
+  restoring the pre-normalization 3.0.3 manifest version. Public, private and external
+  configured targets are passed through unchanged; Mautic/AuthGuard retain
+  access-control responsibility.
+
 ## 3.0.5 - 2026-11-22
 
 - Preserve an explicitly encoded external success URL byte-for-byte during

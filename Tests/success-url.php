@@ -2,69 +2,65 @@
 
 declare(strict_types=1);
 
-require_once dirname(__DIR__).'/Helper/SuccessUrlHelper.php';
+function prepareConfiguredUrl(string $url, mixed $tokens): string
+{
+    if ('' === $url) {
+        return '';
+    }
 
-use MauticPlugin\DOIConfirmBundle\Helper\SuccessUrlHelper;
+    if (!is_array($tokens)) {
+        return $url;
+    }
 
-function assertSuccessUrl(string $expected, string $actual, string $message): void
+    return str_replace(array_keys($tokens), array_values($tokens), $url);
+}
+
+function assertConfiguredUrl(string $expected, string $actual, string $message): void
 {
     if ($expected !== $actual) {
         throw new RuntimeException(sprintf('%s Expected "%s", got "%s".', $message, $expected, $actual));
     }
 }
 
-assertSuccessUrl(
+assertConfiguredUrl(
+    '/s/forms/preview/4',
+    prepareConfiguredUrl('/s/forms/preview/4', []),
+    'Explicit private Mautic URL changed.'
+);
+assertConfiguredUrl(
     '/form/4',
-    SuccessUrlHelper::normalize('/s/forms/preview/4', 'infopoint.sales-snap.com'),
-    'Relative admin preview was not converted to the public form route.'
+    prepareConfiguredUrl('/form/4', []),
+    'Explicit public Mautic URL changed.'
 );
-assertSuccessUrl(
-    'https://infopoint.sales-snap.com/form/4?source=doi#confirmed',
-    SuccessUrlHelper::normalize(
-        'https://infopoint.sales-snap.com/s/forms/preview/4?source=doi#confirmed',
-        'infopoint.sales-snap.com'
+assertConfiguredUrl(
+    'https://external.example.test/thank-you/%2Fkeep?return=%252Faccount%252Fconfirmed&source=doi#complete',
+    prepareConfiguredUrl(
+        'https://external.example.test/thank-you/%2Fkeep?return=%252Faccount%252Fconfirmed&source=doi#complete',
+        []
     ),
-    'Same-host admin preview was not converted without losing query or fragment.'
+    'External URL, query, fragment or encoding changed.'
 );
-assertSuccessUrl(
-    'https://success.example.test/thank-you?contact={contactfield=id}',
-    SuccessUrlHelper::normalize(
-        'https://success.example.test/thank-you?contact={contactfield=id}',
-        'infopoint.sales-snap.com'
-    ),
-    'Explicit external success URL changed.'
-);
-assertSuccessUrl(
-    'https://success.example.test/thank-you?return=%252Faccount%252Fconfirmed',
-    SuccessUrlHelper::normalize(
-        'https://success.example.test/thank-you?return=%252Faccount%252Fconfirmed',
-        'infopoint.sales-snap.com'
-    ),
-    'Explicit encoded external success URL was decoded or otherwise changed.'
-);
-assertSuccessUrl(
-    'https://external.example.test/s/forms/preview/4',
-    SuccessUrlHelper::normalize(
-        'https://external.example.test/s/forms/preview/4',
-        'infopoint.sales-snap.com'
-    ),
-    'External URL that resembles a Mautic preview route changed.'
-);
-assertSuccessUrl(
-    'https://infopoint.sales-snap.com/form/4',
-    SuccessUrlHelper::normalize('https://infopoint.sales-snap.com/form/4', 'infopoint.sales-snap.com'),
-    'Existing public form URL changed.'
+assertConfiguredUrl(
+    '/result?email=lead%40example.test#done',
+    prepareConfiguredUrl('/result?email={contactfield=email}#done', ['{contactfield=email}' => 'lead%40example.test']),
+    'Configured token replacement changed unrelated URL bytes.'
 );
 
-$subscriber = file_get_contents(dirname(__DIR__).'/EventListener/FormSubscriber.php');
-$config = file_get_contents(dirname(__DIR__).'/Config/config.php');
+$subscriber = (string) file_get_contents(dirname(__DIR__).'/EventListener/FormSubscriber.php');
+$config = (string) file_get_contents(dirname(__DIR__).'/Config/config.php');
 
-if (!is_string($subscriber) || !str_contains($subscriber, "'url' => SuccessUrlHelper::normalize(")) {
-    throw new RuntimeException('New DOI payloads do not normalize their success URL.');
+if (!str_contains($subscriber, "'url' => \$this->preparePostUrl(\$config['post_url'] ?? '', \$tokens),")) {
+    throw new RuntimeException('New DOI payloads do not use the configured success URL directly.');
 }
-if (!is_string($config) || str_contains($config, '/s/forms/preview/')) {
+if (str_contains($subscriber, 'SuccessUrlHelper') || str_contains($subscriber, 'urldecode($url)')) {
+    throw new RuntimeException('DOI success URL is still normalized or decoded by plugin-owned logic.');
+}
+if (!str_contains($config, "'version'     => '3.0.3'")) {
+    throw new RuntimeException('Rollback must restore the pre-normalization 3.0.3 manifest version.');
+}
+if (str_contains($config, '/s/forms/preview/')) {
     throw new RuntimeException('The plugin must not register or replace Mautic admin preview routes.');
 }
 
-echo 'SUCCESS_URL local-preview=public-form external=preserved admin-route=untouched'.PHP_EOL;
-echo 'PASS DOI success URL normalization'.PHP_EOL;
+echo 'SUCCESS_URL private=preserved public=preserved external=byte-for-byte access-control=native'.PHP_EOL;
+echo 'PASS DOI configured success URL rollback'.PHP_EOL;

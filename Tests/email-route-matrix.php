@@ -46,7 +46,6 @@ foreach (['admin_form_preview_negative_control', 'doi_documentation_negative_con
 $config = (string) file_get_contents($root.'/Config/config.php');
 $subscriber = (string) file_get_contents($root.'/EventListener/FormSubscriber.php');
 $controller = (string) file_get_contents($root.'/Controller/DoiController.php');
-$successHelper = (string) file_get_contents($root.'/Helper/SuccessUrlHelper.php');
 
 foreach ([
     "'doiconfirm_doiauth_index'",
@@ -72,8 +71,10 @@ foreach ([
 }
 
 if (!str_contains($controller, "return \$this->redirect(\$config['url'], 302);")
-    || !str_contains($successHelper, "'/form/'.\$matches[1]")) {
-    throw new RuntimeException('DOI success redirect is not bound to the normalized public form target.');
+    || !str_contains($subscriber, "'url' => \$this->preparePostUrl(\$config['post_url'] ?? '', \$tokens),")
+    || str_contains($subscriber, 'SuccessUrlHelper')
+    || str_contains($subscriber, 'urldecode($url)')) {
+    throw new RuntimeException('DOI success redirect does not preserve the configured URL for native access control.');
 }
 
 foreach (['Config', 'Controller', 'EventListener', 'Form', 'Helper', 'Integration', 'Service'] as $directory) {
@@ -128,5 +129,5 @@ if ('' !== $mauticRoot) {
     echo 'MAUTIC_ROUTE_SOURCE /r,/email/*,/form=public /s/forms/preview=main'.PHP_EOL;
 }
 
-echo 'EMAIL_ROUTE_MATRIX public=/r,/doi,/nothuman,/email/*.gif,/form protected=/s/forms/preview'.PHP_EOL;
+echo 'EMAIL_ROUTE_MATRIX plugin=preserve-configured-url public=/r,/doi,/nothuman,/email/*.gif access-control=mautic-authguard'.PHP_EOL;
 echo 'PASS DOI email route matrix'.PHP_EOL;
