@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.0.4 - 2026-11-22
+
+- Normalize same-host Mautic admin form preview success URLs from
+  `/s/forms/preview/{id}` to the public `/form/{id}` route before creating a
+  DOI payload.
+- Preserve explicit external success URLs and leave Mautic's authenticated
+  admin preview route unchanged.
+
 ## 3.0.3 - 2026-09-16
 
 - Replace the documentation controller's inherited `CommonController`

@@ -275,3 +275,21 @@ documentation route returned login redirects instead of HTTP 500, while
 `/mtc.js` and a controlled `/mtc/event` request returned HTTP 200.
 Authenticated documentation rendering and end-to-end DOI email delivery
 remain operator acceptance checks.
+
+## Patch note for 3.0.4
+
+3.0.4 applies one forward success-URL rule before encrypting a new DOI payload:
+a relative or same-host Mautic admin preview path matching
+`/s/forms/preview/{id}` becomes the public `/form/{id}` path. Query strings and
+fragments are retained. An explicit URL on another host is returned unchanged,
+even if its path resembles Mautic's preview route.
+
+The plugin does not register, replace or weaken Mautic's protected admin
+preview route, and it does not change AuthGuard or MFA. Per operator direction,
+there is no migration and no compensating controller branch for previously
+issued encrypted DOI payloads. Targeted regression checks cover relative and
+same-host preview conversion, external URL preservation, existing public URL
+preservation and a source guard against plugin-owned preview routes. Existing
+Mautic 5/6/7 compatibility is inherited from 3.0.3 because this patch adds no
+Mautic API, dependency, service-wiring or schema change. Live Mautic 7.2.2
+redirect and MFA acceptance remains with SalesSnap-Operation.
