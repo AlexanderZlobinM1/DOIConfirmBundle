@@ -295,3 +295,11 @@ preservation and a source guard against plugin-owned preview routes. Existing
 Mautic 5/6/7 compatibility is inherited from 3.0.3 because this patch adds no
 Mautic API, dependency, service-wiring or schema change. Live Mautic 7.2.2
 redirect and MFA acceptance remains with SalesSnap-Operation.
+
+The post-release evidence files
+`compatibility/doi-email-route-matrix-v1.json` and
+`docs/doi-email-route-matrix.md` enumerate the complete email link chain,
+including Mautic's optional `/r/{redirectId}` wrapper and automatic
+`/email/{idHash}.gif` tracker. `Tests/email-route-matrix.php` checks plugin
+token/route wiring, exact Mautic 7.2.2 public route groups and the protected
+admin-preview negative control without introducing an AuthGuard dependency.

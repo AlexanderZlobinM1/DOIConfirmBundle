@@ -1,0 +1,170 @@
+{
+  "schema": "doi-email-route-matrix-v1",
+  "date": "2026-11-22",
+  "plugin": {
+    "bundle": "DOIConfirmBundle",
+    "version": "3.0.5",
+    "release_ref": "v3.0.5",
+    "release_revision": "283dac9fd9759799c924203c8aa2d2d981f5445d"
+  },
+  "reference_runtime": {
+    "mautic_version": "7.2.2",
+    "mautic_revision": "f28a0120d715a441b7a6e4a688076bd7e725c862",
+    "authguard_version": "7.2.5",
+    "authguard_revision": "ccba5823e54f3f14299a572b4283b0b129d646f1"
+  },
+  "policy": {
+    "public": "Mautic public route: anonymous and authenticated MFA-pending requests continue without login or MFA redirects.",
+    "protected": "Mautic main/admin route: anonymous requests use native login; authenticated MFA-pending requests are challenged by AuthGuard; an MFA-satisfied session continues.",
+    "authguard_boundary": "AuthGuard consumes Mautic's native access map only. It does not classify plugin URLs, rewrite URLs or make a protected route public."
+  },
+  "routes": [
+    {
+      "id": "mautic_click_tracking",
+      "route_name": "mautic_url_redirect",
+      "path": "/r/{redirectId}?ct={clickthrough}",
+      "owner": "mautic_core",
+      "email_presence": "Mautic tracking wrapper when trackable URLs are enabled",
+      "next": "/doi/{enc} or /nothuman/{hash}",
+      "access": "public",
+      "anonymous": "allow and redirect to stored target",
+      "authenticated_mfa_pending": "allow; no MFA challenge",
+      "mfa_satisfied": "allow",
+      "forbidden_targets": ["/s/login", "/s/gauth", "/s/forms/preview/{id}"]
+    },
+    {
+      "id": "doi_confirmation",
+      "route_name": "doiconfirm_doiauth_index",
+      "path": "/doi/{enc}",
+      "owner": "DOIConfirmBundle",
+      "email_presence": "direct {doi_url} target; may be behind /r/{redirectId}",
+      "next": "/form/{id} or an explicit configured external URL",
+      "access": "public",
+      "anonymous": "allow and return HTTP 302 to normalized success URL",
+      "authenticated_mfa_pending": "allow; no MFA challenge",
+      "mfa_satisfied": "allow",
+      "forbidden_targets": ["/s/login", "/s/gauth", "/s/forms/preview/{id}"]
+    },
+    {
+      "id": "doi_scanner_trap",
+      "route_name": "doiconfirm_doiauth_nothuman",
+      "path": "/nothuman/{hash}",
+      "owner": "DOIConfirmBundle",
+      "email_presence": "optional {doi_nothuman} target; may be behind /r/{redirectId}",
+      "next": "HTTP 200 anti-scanner response",
+      "access": "public",
+      "anonymous": "allow",
+      "authenticated_mfa_pending": "allow; no MFA challenge",
+      "mfa_satisfied": "allow",
+      "forbidden_targets": ["/s/login", "/s/gauth"]
+    },
+    {
+      "id": "mautic_email_tracker",
+      "route_name": "mautic_email_tracker",
+      "path": "/email/{idHash}.gif?ct={clickthrough}",
+      "owner": "mautic_core",
+      "email_presence": "Mautic-generated tracking pixel for a tracked email",
+      "next": "tracking image response",
+      "access": "public",
+      "anonymous": "allow",
+      "authenticated_mfa_pending": "allow; no MFA challenge",
+      "mfa_satisfied": "allow",
+      "forbidden_targets": ["/s/login", "/s/gauth"]
+    },
+    {
+      "id": "mautic_email_webview",
+      "route_name": "mautic_email_webview",
+      "path": "/email/view/{idHash}",
+      "owner": "mautic_core",
+      "email_presence": "template-dependent Mautic web-view link",
+      "next": "public email web view",
+      "access": "public",
+      "anonymous": "allow",
+      "authenticated_mfa_pending": "allow; no MFA challenge",
+      "mfa_satisfied": "allow",
+      "forbidden_targets": ["/s/login", "/s/gauth"]
+    },
+    {
+      "id": "mautic_email_unsubscribe",
+      "route_name": "mautic_email_unsubscribe",
+      "path": "/email/unsubscribe/{idHash}/{urlEmail}/{secretHash}",
+      "owner": "mautic_core",
+      "email_presence": "template-dependent Mautic unsubscribe link",
+      "next": "public unsubscribe flow",
+      "access": "public",
+      "anonymous": "allow",
+      "authenticated_mfa_pending": "allow; no MFA challenge",
+      "mfa_satisfied": "allow",
+      "forbidden_targets": ["/s/login", "/s/gauth"]
+    },
+    {
+      "id": "mautic_email_unsubscribe_all",
+      "route_name": "mautic_email_unsubscribe_all",
+      "path": "/email/dnc/{idHash}/{urlEmail}/{secretHash}",
+      "owner": "mautic_core",
+      "email_presence": "template-dependent Mautic unsubscribe-all link",
+      "next": "public do-not-contact flow",
+      "access": "public",
+      "anonymous": "allow",
+      "authenticated_mfa_pending": "allow; no MFA challenge",
+      "mfa_satisfied": "allow",
+      "forbidden_targets": ["/s/login", "/s/gauth"]
+    },
+    {
+      "id": "public_form_success",
+      "route_name": "mautic_form_preview",
+      "path": "/form/{id}",
+      "owner": "mautic_core",
+      "email_presence": "same-host success target reached after /doi/{enc}; not embedded as a separate DOI token",
+      "next": "public form response",
+      "access": "public",
+      "anonymous": "allow",
+      "authenticated_mfa_pending": "allow; no MFA challenge",
+      "mfa_satisfied": "allow",
+      "forbidden_targets": ["/s/login", "/s/gauth"]
+    },
+    {
+      "id": "external_success",
+      "route_name": null,
+      "path": "https://external.example/{configured-path}",
+      "owner": "external_site",
+      "email_presence": "explicit success target encrypted in the DOI payload",
+      "next": "external site",
+      "access": "external",
+      "anonymous": "DOI returns HTTP 302 to the unchanged configured URL",
+      "authenticated_mfa_pending": "same result; Mautic MFA does not classify the external target",
+      "mfa_satisfied": "same result",
+      "forbidden_targets": []
+    },
+    {
+      "id": "admin_form_preview_negative_control",
+      "route_name": "mautic_form_action",
+      "path": "/s/forms/preview/{id}",
+      "owner": "mautic_core",
+      "email_presence": "must not be the success target in newly generated DOI payloads",
+      "next": "native login or MFA according to session state",
+      "access": "protected",
+      "anonymous": "native authentication required",
+      "authenticated_mfa_pending": "redirect to /s/gauth",
+      "mfa_satisfied": "allow",
+      "forbidden_targets": []
+    },
+    {
+      "id": "doi_documentation_negative_control",
+      "route_name": "doiconfirm_documentation",
+      "path": "/s/doi-confirm/documentation",
+      "owner": "DOIConfirmBundle",
+      "email_presence": "never emitted in DOI email",
+      "next": "admin-only documentation",
+      "access": "protected",
+      "anonymous": "native authentication required",
+      "authenticated_mfa_pending": "redirect to /s/gauth",
+      "mfa_satisfied": "allow for an authorized administrator",
+      "forbidden_targets": []
+    }
+  ],
+  "excluded_from_plugin_generated_links": [
+    "Mautic email preview, resubscribe and arbitrary template links are not generated by DOIConfirmBundle. If the selected Mautic template includes them, their native Mautic route classification applies unchanged."
+  ],
+  "live_acceptance": "pending on infopoint.sales-snap.com: capture the actual email HTML and anonymous redirect chain for /r -> /doi -> /form, plus the optional /r -> /nothuman chain."
+}

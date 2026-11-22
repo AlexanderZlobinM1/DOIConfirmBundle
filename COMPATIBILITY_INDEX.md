@@ -19,6 +19,13 @@ Mautic's protected admin preview route. Per operator direction, the release
 contains one forward algorithm only: no migration or compensating handling for
 previously issued encrypted payloads.
 
+The post-release email-route matrix records the complete DOI chain for Mautic
+7.2.2: optional native `/r/{redirectId}` tracking, plugin-public `/doi/{enc}`
+or `/nothuman/{hash}`, native email tracking routes and public `/form/{id}`
+success. Exact 7.2.2 route-source regression confirms those routes remain in
+Mautic's `public` group, while `/s/forms/preview/{id}` and plugin documentation
+remain protected controls. AuthGuard is neither referenced nor modified.
+
 3.0.3 replaces the documentation controller's eager inherited dependencies
 with action injection, removing the Mautic 6/7.1.3 container cycle introduced
 by 3.0.2. Version 3.0.2 is explicitly unsafe on Mautic 6 and Mautic 7.1.3 and
