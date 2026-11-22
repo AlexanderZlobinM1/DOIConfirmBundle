@@ -10,6 +10,7 @@ Current release: `3.0.5` (`v3.0.5`). Declared support: Mautic 5.x, 6.x, 7.x; PHP
 | 6.0.9 | ✓ | Inherited from exact 3.0.3 cache/runtime/controller evidence; 3.0.5 changes only pure URL normalization before payload encryption |
 | 7.1.3 | ✓ | Inherited from exact 3.0.3 cache/runtime/controller and live route-health evidence; 3.0.5 changes only pure URL normalization before payload encryption |
 | 7.2.0 | ✓ | Inherited from prior 7.2 runtime/service evidence; targeted 3.0.5 URL regression and 7.2.2 service wiring pass, while infopoint live acceptance remains Operations-owned |
+| 7.2.2 | ✓ | Compatible by retained 7.2 runtime evidence and patch-release inheritance: 3.0.5 changes only pure URL normalization, with no Mautic API, service, schema or lifecycle change; the specific infopoint redirect remains an acceptance check, not a compatibility downgrade |
 
 3.0.5 normalizes a same-host `/s/forms/preview/{id}` configured success URL to
 the public `/form/{id}` route before the DOI payload is encrypted. Explicit
